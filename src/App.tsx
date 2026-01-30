@@ -6,19 +6,15 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
-import Index from "./pages/Index";
+import Home from "./pages/Home";
 import Auth from "./pages/Auth";
-import Admin from "./pages/Admin";
+import Dashboard from "./pages/Dashboard";
+import AdminPanel from "./pages/AdminPanel";
 import Profile from "./pages/Profile";
-import CategoryFiles from "./pages/CategoryFiles";
-import DepartmentView from "./pages/DepartmentView";
-import LevelView from "./pages/LevelView";
-import SemesterView from "./pages/SemesterView";
-import SemesterCategories from "./pages/SemesterCategories";
+import ShareFile from "./pages/ShareFile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
-// Force types refresh
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -26,14 +22,12 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><DepartmentView /></PageTransition>} />
+        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
-        <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+        <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+        <Route path="/admin" element={<PageTransition><AdminPanel /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
-        <Route path="/department/:departmentId/levels" element={<PageTransition><LevelView /></PageTransition>} />
-        <Route path="/level/:levelId/semesters" element={<PageTransition><SemesterView /></PageTransition>} />
-        <Route path="/:semesterId/categories" element={<PageTransition><SemesterCategories /></PageTransition>} />
-        <Route path="/:semesterId/categories/:categoryId" element={<PageTransition><CategoryFiles /></PageTransition>} />
+        <Route path="/s/:shareCode" element={<PageTransition><ShareFile /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
