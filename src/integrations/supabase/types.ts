@@ -14,41 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      academic_levels: {
-        Row: {
-          created_at: string
-          department_id: string
-          id: string
-          level_number: number
-          name: string
-          slug: string
-        }
-        Insert: {
-          created_at?: string
-          department_id: string
-          id?: string
-          level_number: number
-          name: string
-          slug: string
-        }
-        Update: {
-          created_at?: string
-          department_id?: string
-          id?: string
-          level_number?: number
-          name?: string
-          slug?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "academic_levels_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       activity_logs: {
         Row: {
           action_type: string
@@ -85,109 +50,6 @@ export type Database = {
         }
         Relationships: []
       }
-      categories: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          semester_id: string | null
-          slug: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          semester_id?: string | null
-          slug?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          semester_id?: string | null
-          slug?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "categories_semester_id_fkey"
-            columns: ["semester_id"]
-            isOneToOne: false
-            referencedRelation: "semesters"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      departments: {
-        Row: {
-          created_at: string
-          has_preparatory: boolean | null
-          id: string
-          name: string
-          slug: string
-          years_count: number
-        }
-        Insert: {
-          created_at?: string
-          has_preparatory?: boolean | null
-          id?: string
-          name: string
-          slug: string
-          years_count: number
-        }
-        Update: {
-          created_at?: string
-          has_preparatory?: boolean | null
-          id?: string
-          name?: string
-          slug?: string
-          years_count?: number
-        }
-        Relationships: []
-      }
-      files: {
-        Row: {
-          category_id: string
-          created_at: string
-          file_path: string
-          file_size: number | null
-          id: string
-          mime_type: string | null
-          name: string
-        }
-        Insert: {
-          category_id: string
-          created_at?: string
-          file_path: string
-          file_size?: number | null
-          id?: string
-          mime_type?: string | null
-          name: string
-        }
-        Update: {
-          category_id?: string
-          created_at?: string
-          file_path?: string
-          file_size?: number | null
-          id?: string
-          mime_type?: string | null
-          name?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "files_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           created_at: string
@@ -209,40 +71,82 @@ export type Database = {
         }
         Relationships: []
       }
-      semesters: {
+      user_files: {
         Row: {
-          academic_level_id: string
           created_at: string
+          file_extension: string | null
+          file_path: string
+          file_size: number | null
+          folder_id: string | null
           id: string
+          is_public: boolean | null
+          mime_type: string | null
           name: string
-          semester_number: number
-          slug: string
+          share_code: string | null
+          updated_at: string
+          user_id: string
         }
         Insert: {
-          academic_level_id: string
           created_at?: string
+          file_extension?: string | null
+          file_path: string
+          file_size?: number | null
+          folder_id?: string | null
           id?: string
+          is_public?: boolean | null
+          mime_type?: string | null
           name: string
-          semester_number: number
-          slug: string
+          share_code?: string | null
+          updated_at?: string
+          user_id: string
         }
         Update: {
-          academic_level_id?: string
           created_at?: string
+          file_extension?: string | null
+          file_path?: string
+          file_size?: number | null
+          folder_id?: string | null
           id?: string
+          is_public?: boolean | null
+          mime_type?: string | null
           name?: string
-          semester_number?: number
-          slug?: string
+          share_code?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "semesters_academic_level_id_fkey"
-            columns: ["academic_level_id"]
+            foreignKeyName: "user_files_folder_id_fkey"
+            columns: ["folder_id"]
             isOneToOne: false
-            referencedRelation: "academic_levels"
+            referencedRelation: "user_folders"
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -270,6 +174,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_share_code: { Args: never; Returns: string }
       generate_slug: { Args: { text_input: string }; Returns: string }
       has_role: {
         Args: {

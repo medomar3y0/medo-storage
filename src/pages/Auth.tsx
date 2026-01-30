@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,15 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import { User, Session } from "@supabase/supabase-js";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff, Home } from "lucide-react";
 import { signUpSchema, signInSchema } from "@/lib/authValidation";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -29,7 +31,7 @@ const Auth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          navigate("/");
+          navigate("/dashboard");
         }
       }
     );
@@ -39,7 +41,7 @@ const Auth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        navigate("/");
+        navigate("/dashboard");
       }
     });
 
@@ -64,7 +66,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/dashboard`,
             data: {
               username: username
             }
@@ -90,7 +92,13 @@ const Auth = () => {
         toast.success("تم تسجيل الدخول بنجاح");
       }
     } catch (error: any) {
-      toast.error(error.message || "حدث خطأ");
+      if (error.message === "User already registered") {
+        toast.error("هذا البريد مسجل بالفعل، جرب تسجيل الدخول");
+      } else if (error.message === "Invalid login credentials") {
+        toast.error("البريد أو كلمة المرور غير صحيحة");
+      } else {
+        toast.error(error.message || "حدث خطأ");
+      }
     } finally {
       setLoading(false);
     }
@@ -98,14 +106,35 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-secondary/20">
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/")}
+              className="gap-2"
+            >
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">الرئيسية</span>
+            </Button>
+
+            <h1 className="text-lg font-bold text-primary">MEDO STORAGE</h1>
+
+            <ThemeToggle />
+          </div>
+        </div>
+      </nav>
+
       <div className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full shadow-xl">
+        <Card className="w-full max-w-md shadow-xl">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-2">
               <Lock className="w-8 h-8 text-primary" />
             </div>
             <CardTitle className="text-2xl">{isSignUp ? "إنشاء حساب" : "تسجيل الدخول"}</CardTitle>
-            <CardDescription>{isSignUp ? "أدخل بياناتك لإنشاء حساب جديد" : "أدخل بياناتك للوصول إلى لوحة التحكم"}</CardDescription>
+            <CardDescription>{isSignUp ? "أدخل بياناتك لإنشاء حساب جديد" : "أدخل بياناتك للوصول إلى ملفاتك"}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAuth} className="space-y-4">
