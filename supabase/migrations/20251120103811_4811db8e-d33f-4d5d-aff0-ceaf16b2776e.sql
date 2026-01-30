@@ -1,0 +1,2 @@
+-- Relax RLS to allow admins checked via has_role() to modify user_roles without failure
+-- No change needed; instead we will keep policies as-is.
