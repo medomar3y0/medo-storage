@@ -88,15 +88,15 @@ const Home = () => {
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
           {features.map((feature, index) => (
-            <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-              <CardHeader>
+            <Card key={index} className="text-center hover:shadow-lg transition-shadow h-full flex flex-col">
+              <CardHeader className="flex-1 flex flex-col items-center justify-center">
                 <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
                   <feature.icon className="w-6 h-6 text-primary" />
                 </div>
                 <CardTitle className="text-lg">{feature.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription>{feature.description}</CardDescription>
+              <CardContent className="pt-0">
+                <CardDescription className="min-h-[48px]">{feature.description}</CardDescription>
               </CardContent>
             </Card>
           ))}

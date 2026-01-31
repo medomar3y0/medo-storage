@@ -6,10 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Footer } from "@/components/Footer";
+import { MobileMenu } from "@/components/MobileMenu";
 import { User, Session } from "@supabase/supabase-js";
-import { Home, Shield, LogOut, Eye, EyeOff, UserCircle } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { Eye, EyeOff, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 import { changePasswordSchema, changeUsernameSchema } from "@/lib/authValidation";
 
@@ -17,7 +16,6 @@ const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const { isAdmin } = useIsAdmin(user);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -78,11 +76,6 @@ const Profile = () => {
     if (!rolesError && rolesData) {
       setUserRoles(rolesData.map(r => r.role));
     }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -232,49 +225,8 @@ const Profile = () => {
       <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/")}
-                className="gap-2 hover:bg-accent/10"
-              >
-                <Home className="h-4 w-4" />
-                <span className="hidden sm:inline">الرئيسية</span>
-              </Button>
-              {isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/admin")}
-                  className="gap-2 hover:bg-accent/10"
-                >
-                  <Shield className="h-4 w-4" />
-                  <span className="hidden sm:inline">لوحة التحكم</span>
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/profile")}
-                className="gap-2 hover:bg-accent/10"
-              >
-                <UserCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">الملف الشخصي</span>
-              </Button>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <Button
-                size="sm"
-                onClick={handleLogout}
-                className="gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">تسجيل الخروج</span>
-              </Button>
-            </div>
+            <h1 className="text-lg font-bold text-primary">الملف الشخصي</h1>
+            <MobileMenu />
           </div>
         </div>
       </nav>
