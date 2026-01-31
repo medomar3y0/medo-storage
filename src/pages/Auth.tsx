@@ -6,11 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Footer } from "@/components/Footer";
+import { MobileMenu } from "@/components/MobileMenu";
 import { toast } from "sonner";
 import { User, Session } from "@supabase/supabase-js";
-import { Lock, Eye, EyeOff, Home } from "lucide-react";
+import { Lock, Eye, EyeOff } from "lucide-react";
 import { signUpSchema, signInSchema } from "@/lib/authValidation";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -110,19 +110,8 @@ const Auth = () => {
       <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/")}
-              className="gap-2"
-            >
-              <Home className="h-4 w-4" />
-              <span className="hidden sm:inline">الرئيسية</span>
-            </Button>
-
             <h1 className="text-lg font-bold text-primary">MEDO STORAGE</h1>
-
-            <ThemeToggle />
+            <MobileMenu />
           </div>
         </div>
       </nav>

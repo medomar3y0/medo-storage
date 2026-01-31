@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Footer } from "@/components/Footer";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { MobileMenu } from "@/components/MobileMenu";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 import { 
-  Home, LogOut, Users, FileText, Search, 
+  Users, FileText, Search, 
   ChevronLeft, Download, Eye, Folder, File, UserCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -132,11 +132,6 @@ const AdminPanel = () => {
     fetchUserData(profile.id);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  };
-
   const viewFile = async (file: UserFile) => {
     try {
       const { data, error } = await supabase.storage
@@ -198,36 +193,8 @@ const AdminPanel = () => {
       <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/")}
-                className="gap-2"
-              >
-                <Home className="h-4 w-4" />
-                <span className="hidden sm:inline">الرئيسية</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/dashboard")}
-                className="gap-2"
-              >
-                <UserCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">لوحتي</span>
-              </Button>
-            </div>
-
             <h1 className="text-lg font-bold text-primary">لوحة الأدمن</h1>
-
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <Button size="sm" onClick={handleLogout} className="gap-2">
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">خروج</span>
-              </Button>
-            </div>
+            <MobileMenu />
           </div>
         </div>
       </nav>

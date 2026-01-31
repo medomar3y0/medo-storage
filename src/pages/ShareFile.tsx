@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Download, Eye, File, Home, AlertCircle } from "lucide-react";
+import { MobileMenu } from "@/components/MobileMenu";
+import { Download, Eye, File, AlertCircle, Home } from "lucide-react";
 import { toast } from "sonner";
 
 interface SharedFile {
@@ -113,19 +113,8 @@ const ShareFile = () => {
       <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/")}
-              className="gap-2"
-            >
-              <Home className="h-4 w-4" />
-              <span className="hidden sm:inline">الرئيسية</span>
-            </Button>
-
             <h1 className="text-lg font-bold text-primary">MEDO STORAGE</h1>
-
-            <ThemeToggle />
+            <MobileMenu />
           </div>
         </div>
       </nav>

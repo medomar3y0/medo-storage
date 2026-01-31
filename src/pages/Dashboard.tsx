@@ -8,16 +8,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Footer } from "@/components/Footer";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { MobileMenu } from "@/components/MobileMenu";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 import { 
-  Home, LogOut, FolderPlus, Upload, Folder, File, 
-  Trash2, Share2, Download, Eye, Copy, Link, 
-  ChevronLeft, UserCircle, Shield
+  FolderPlus, Upload, Folder, File, 
+  Trash2, Download, Eye, Copy, Link, 
+  ChevronLeft, Share2
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface UserFolder {
   id: string;
@@ -50,7 +49,6 @@ const Dashboard = () => {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
-  const { isAdmin } = useIsAdmin(user);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
@@ -116,11 +114,6 @@ const Dashboard = () => {
       fetchFiles(currentFolder?.id || null);
     }
   }, [user, currentFolder, fetchFolders, fetchFiles]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  };
 
   const createFolder = async () => {
     if (!newFolderName.trim() || !user) return;
@@ -316,47 +309,8 @@ const Dashboard = () => {
       <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/")}
-                className="gap-2"
-              >
-                <Home className="h-4 w-4" />
-                <span className="hidden sm:inline">الرئيسية</span>
-              </Button>
-              {isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/admin")}
-                  className="gap-2"
-                >
-                  <Shield className="h-4 w-4" />
-                  <span className="hidden sm:inline">لوحة الأدمن</span>
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/profile")}
-                className="gap-2"
-              >
-                <UserCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">الملف الشخصي</span>
-              </Button>
-            </div>
-
             <h1 className="text-lg font-bold text-primary">MEDO STORAGE</h1>
-
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <Button size="sm" onClick={handleLogout} className="gap-2">
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">خروج</span>
-              </Button>
-            </div>
+            <MobileMenu />
           </div>
         </div>
       </nav>
