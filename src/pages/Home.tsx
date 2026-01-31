@@ -1,23 +1,30 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Upload, FolderOpen, Share2, Shield, LogIn, UserPlus } from "lucide-react";
+import { MobileMenu } from "@/components/MobileMenu";
+import { Upload, FolderOpen, Share2, Shield } from "lucide-react";
 
 const Home = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Check if user is logged in and redirect to dashboard
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        navigate("/dashboard");
-      }
+      setUser(session?.user ?? null);
     });
-  }, [navigate]);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const features = [
     {
@@ -50,24 +57,18 @@ const Home = () => {
           <div className="flex justify-between items-center h-16">
             <h1 className="text-xl font-bold text-primary">MEDO STORAGE</h1>
             <div className="flex items-center gap-3">
-              <ThemeToggle />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/auth")}
-                className="gap-2"
-              >
-                <LogIn className="h-4 w-4" />
-                <span className="hidden sm:inline">تسجيل الدخول</span>
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => navigate("/auth?signup=true")}
-                className="gap-2"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span className="hidden sm:inline">إنشاء حساب</span>
-              </Button>
+              {user && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => navigate("/dashboard")}
+                  className="gap-2"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                  <span className="hidden sm:inline">ملفاتي</span>
+                </Button>
+              )}
+              <MobileMenu />
             </div>
           </div>
         </div>
@@ -118,12 +119,13 @@ const Home = () => {
         </Card>
 
         {/* CTA */}
-        <div className="mt-8 flex gap-4">
-          <Button size="lg" onClick={() => navigate("/auth?signup=true")} className="gap-2">
-            <UserPlus className="h-5 w-5" />
-            ابدأ الآن مجاناً
-          </Button>
-        </div>
+        {!user && (
+          <div className="mt-8 flex gap-4">
+            <Button size="lg" onClick={() => navigate("/auth?signup=true")} className="gap-2">
+              ابدأ الآن مجاناً
+            </Button>
+          </div>
+        )}
       </div>
 
       <Footer />
