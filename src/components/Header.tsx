@@ -1,67 +1,31 @@
-import { useNavigate, useLocation } from "react-router-dom";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { Home, ChevronLeft } from "lucide-react";
-import logoLight from "@/assets/logo-light.png";
-import logoDark from "@/assets/logo-dark.png";
-import { Button } from "@/components/ui/button";
+import { useLocation, useNavigate } from "react-router-dom";
+import { MobileMenu } from "@/components/MobileMenu";
 
-export const Header = () => {
+type HeaderProps = {
+  /** عنوان الصفحة (لو لم يُمرَّر سيتم استخدام اسم الموقع). */
+  title?: string;
+};
+
+export const Header = ({ title }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const currentLogo = mounted && theme === "dark" ? logoDark : logoLight;
-  const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === "/";
+  const displayTitle = isHomePage ? "MEDO STORAGE" : (title ?? "MEDO STORAGE");
 
   return (
-    <header className="w-full bg-card/95 backdrop-blur-xl border-b border-border/50 sticky top-0 z-50 shadow-elegant">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div className="flex items-center justify-between">
-          {/* Back Button */}
-          {!isHomePage && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(-1)}
-              className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">رجوع</span>
-            </Button>
-          )}
-          
-          {/* Logo */}
-          <button 
+    <header className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <button
+            type="button"
             onClick={() => navigate("/")}
-            className="group relative transition-all duration-300 hover:scale-105 mx-auto"
+            className="text-lg font-bold text-primary text-right"
+            aria-label="العودة إلى الصفحة الرئيسية"
           >
-            <img 
-              src={currentLogo} 
-              alt="Sons of Taiba" 
-              className="h-10 sm:h-12 w-auto transition-opacity duration-300 group-hover:opacity-90"
-            />
+            {displayTitle}
           </button>
-          
-          {/* Home Button */}
-          {!isHomePage && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/")}
-              className="gap-2 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-            >
-              <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">الرئيسية</span>
-            </Button>
-          )}
-          
-          {isHomePage && <div className="w-20" />}
+          <MobileMenu />
         </div>
       </div>
     </header>

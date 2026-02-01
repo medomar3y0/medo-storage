@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { MobileMenu } from "@/components/MobileMenu";
 import { Upload, FolderOpen, Share2, Shield } from "lucide-react";
 
 const Home = () => {
@@ -51,28 +51,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-bold text-primary">MEDO STORAGE</h1>
-            <div className="flex items-center gap-3">
-              {user && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => navigate("/dashboard")}
-                  className="gap-2"
-                >
-                  <FolderOpen className="h-4 w-4" />
-                  <span className="hidden sm:inline">ملفاتي</span>
-                </Button>
-              )}
-              <MobileMenu />
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
@@ -103,11 +82,11 @@ const Home = () => {
         </div>
 
         {/* Instructions */}
-        <Card className="max-w-2xl mx-auto">
+        <Card className="max-w-4xl mx-auto w-full">
           <CardHeader>
             <CardTitle className="text-center">كيفية الاستخدام</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <ol className="list-decimal list-inside space-y-3 text-muted-foreground">
               <li>قم بإنشاء حساب جديد أو سجل الدخول إذا كان لديك حساب</li>
               <li>أنشئ مجلدات لتنظيم ملفاتك</li>
