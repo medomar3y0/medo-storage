@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { MobileMenu } from "@/components/MobileMenu";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 import { 
@@ -305,15 +305,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-lg font-bold text-primary">MEDO STORAGE</h1>
-            <MobileMenu />
-          </div>
-        </div>
-      </nav>
+      <Header title="ملفاتي" />
 
       {/* Main Content */}
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -403,17 +395,18 @@ const Dashboard = () => {
                     className="cursor-pointer hover:shadow-lg transition-all group"
                     onClick={() => setCurrentFolder(folder)}
                   >
-                    <CardContent className="p-4 flex flex-col items-center">
+                    <CardContent className="relative p-4 flex flex-col items-center">
                       <Folder className="h-12 w-12 text-primary mb-2" />
                       <p className="text-sm font-medium text-center truncate w-full">{folder.name}</p>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        variant="outline"
+                        size="icon"
+                        className="absolute top-2 left-2 h-8 w-8"
                         onClick={(e) => {
                           e.stopPropagation();
                           deleteFolder(folder.id);
                         }}
+                        aria-label="حذف المجلد"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
@@ -453,8 +446,8 @@ const Dashboard = () => {
                     </CardHeader>
                     <CardContent>
                       {/* Privacy Toggle */}
-                      <div className="flex items-center justify-between mb-4 p-2 rounded-lg bg-muted/50">
-                        <Label htmlFor={`public-${file.id}`} className="text-sm cursor-pointer">
+                      <div className="flex items-center justify-between flex-row-reverse mb-4 p-2 rounded-lg bg-muted/50">
+                        <Label htmlFor={`public-${file.id}`} className="text-sm cursor-pointer text-right">
                           {file.is_public ? "عام" : "خاص"}
                         </Label>
                         <Switch

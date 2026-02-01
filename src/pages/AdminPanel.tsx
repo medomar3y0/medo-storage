@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { MobileMenu } from "@/components/MobileMenu";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 import { 
@@ -90,6 +90,7 @@ const AdminPanel = () => {
 
     if (error) {
       console.error("Error fetching users:", error);
+      toast.error("فشل تحميل المستخدمين");
     } else {
       setUsers(data || []);
     }
@@ -189,15 +190,7 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-lg font-bold text-primary">لوحة الأدمن</h1>
-            <MobileMenu />
-          </div>
-        </div>
-      </nav>
+      <Header title="لوحة التحكم" />
 
       {/* Main Content */}
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">

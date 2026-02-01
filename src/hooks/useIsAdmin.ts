@@ -8,6 +8,10 @@ export const useIsAdmin = (user: User | null) => {
 
   useEffect(() => {
     const checkAdminStatus = async () => {
+      // IMPORTANT: when user changes from null -> user, we must re-enter loading state
+      // to avoid guards redirecting before the admin check completes.
+      setLoading(true);
+
       if (!user) {
         setIsAdmin(false);
         setLoading(false);

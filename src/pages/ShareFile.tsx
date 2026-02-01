@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { MobileMenu } from "@/components/MobileMenu";
 import { Download, Eye, File, AlertCircle, Home } from "lucide-react";
 import { toast } from "sonner";
 
@@ -22,6 +22,7 @@ const ShareFile = () => {
   const navigate = useNavigate();
   const [file, setFile] = useState<SharedFile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,6 +52,23 @@ const ShareFile = () => {
         setError("هذا الملف خاص وغير متاح للعرض");
         setLoading(false);
         return;
+      }
+
+      // افتح معاينة الملف مباشرة (مفيد عند مشاركة الرابط في ديسكورد)
+      try {
+        setRedirecting(true);
+        const { data: signed, error: signedError } = await supabase.storage
+          .from("files")
+          .createSignedUrl(data.file_path, 3600);
+
+        if (signedError) throw signedError;
+        if (signed?.signedUrl) {
+          window.location.assign(signed.signedUrl);
+          return;
+        }
+      } catch {
+        // fallback: show the preview page below
+        setRedirecting(false);
       }
 
       setFile(data);
@@ -109,22 +127,14 @@ const ShareFile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-lg font-bold text-primary">MEDO STORAGE</h1>
-            <MobileMenu />
-          </div>
-        </div>
-      </nav>
+      <Header title="مشاركة ملف" />
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-16">
-        {loading ? (
+        {loading || redirecting ? (
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">جاري التحميل...</p>
+            <p className="text-muted-foreground">جاري التحويل إلى معاينة الملف...</p>
           </div>
         ) : error ? (
           <Card className="max-w-md w-full">

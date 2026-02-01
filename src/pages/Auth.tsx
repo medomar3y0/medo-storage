@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { MobileMenu } from "@/components/MobileMenu";
 import { toast } from "sonner";
 import { User, Session } from "@supabase/supabase-js";
 import { Lock, Eye, EyeOff } from "lucide-react";
@@ -106,15 +106,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-secondary/20">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-lg bg-background/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-lg font-bold text-primary">MEDO STORAGE</h1>
-            <MobileMenu />
-          </div>
-        </div>
-      </nav>
+      <Header title={isSignUp ? "إنشاء حساب" : "تسجيل الدخول"} />
 
       <div className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl">
