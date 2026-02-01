@@ -86,17 +86,17 @@ const Home = () => {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
+        <div className="flex flex-col gap-4 max-w-4xl mx-auto mb-12 w-full">
           {features.map((feature, index) => (
-            <Card key={index} className="text-center hover:shadow-lg transition-shadow h-full flex flex-col">
-              <CardHeader className="flex-1 flex flex-col items-center justify-center">
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
-                  <feature.icon className="w-6 h-6 text-primary" />
+            <Card key={index} className="hover:shadow-lg transition-shadow w-full">
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                  <feature.icon className="w-7 h-7 text-primary" />
                 </div>
-                <CardTitle className="text-lg">{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <CardDescription className="min-h-[48px]">{feature.description}</CardDescription>
+                <div className="flex-1 text-right">
+                  <CardTitle className="text-lg mb-1">{feature.title}</CardTitle>
+                  <CardDescription>{feature.description}</CardDescription>
+                </div>
               </CardContent>
             </Card>
           ))}
