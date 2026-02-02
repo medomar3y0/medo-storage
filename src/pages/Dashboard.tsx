@@ -255,7 +255,7 @@ const Dashboard = () => {
   };
 
   const copyShareLink = (file: UserFile) => {
-    const link = `${window.location.origin}/s/${file.share_code}.${file.file_extension}`;
+    const link = `${window.location.origin}/s/${file.share_code}`;
     navigator.clipboard.writeText(link);
     toast.success("تم نسخ الرابط");
   };
@@ -446,23 +446,25 @@ const Dashboard = () => {
                     </CardHeader>
                     <CardContent>
                       {/* Privacy Toggle */}
-                      <div className="flex items-center justify-between flex-row-reverse mb-4 p-2 rounded-lg bg-muted/50">
-                        <Label htmlFor={`public-${file.id}`} className="text-sm cursor-pointer text-right">
-                          {file.is_public ? "عام" : "خاص"}
-                        </Label>
-                        <Switch
-                          id={`public-${file.id}`}
-                          checked={file.is_public}
-                          onCheckedChange={() => toggleFilePublic(file)}
-                        />
+                      <div className="flex items-center justify-between mb-4 p-2 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            id={`public-${file.id}`}
+                            checked={file.is_public}
+                            onCheckedChange={() => toggleFilePublic(file)}
+                          />
+                          <Label htmlFor={`public-${file.id}`} className="text-sm cursor-pointer">
+                            {file.is_public ? "عام" : "خاص"}
+                          </Label>
+                        </div>
                       </div>
 
                       {/* Share Link */}
                       {file.share_code && (
                         <div className="flex items-center gap-2 mb-4 p-2 rounded-lg bg-muted/30">
                           <Link className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <code className="text-xs truncate flex-1">
-                            /s/{file.share_code}.{file.file_extension}
+                          <code className="text-xs truncate flex-1 direction-ltr text-left">
+                            /s/{file.share_code}
                           </code>
                           <Button
                             variant="ghost"

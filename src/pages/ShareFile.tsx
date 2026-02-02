@@ -22,7 +22,6 @@ const ShareFile = () => {
   const navigate = useNavigate();
   const [file, setFile] = useState<SharedFile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,23 +51,6 @@ const ShareFile = () => {
         setError("هذا الملف خاص وغير متاح للعرض");
         setLoading(false);
         return;
-      }
-
-      // افتح معاينة الملف مباشرة (مفيد عند مشاركة الرابط في ديسكورد)
-      try {
-        setRedirecting(true);
-        const { data: signed, error: signedError } = await supabase.storage
-          .from("files")
-          .createSignedUrl(data.file_path, 3600);
-
-        if (signedError) throw signedError;
-        if (signed?.signedUrl) {
-          window.location.assign(signed.signedUrl);
-          return;
-        }
-      } catch {
-        // fallback: show the preview page below
-        setRedirecting(false);
       }
 
       setFile(data);
@@ -131,10 +113,10 @@ const ShareFile = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-16">
-        {loading || redirecting ? (
+        {loading ? (
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">جاري التحويل إلى معاينة الملف...</p>
+            <p className="text-muted-foreground">جاري تحميل الملف...</p>
           </div>
         ) : error ? (
           <Card className="max-w-md w-full">
