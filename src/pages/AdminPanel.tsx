@@ -73,9 +73,14 @@ const AdminPanel = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (!isLoadingAdmin && !isAdmin && user) {
-      toast.error("ليس لديك صلاحية الوصول");
-      navigate("/dashboard");
+    // Only redirect if we have a user, admin check is complete, and user is NOT admin
+    // Add a small delay to ensure the check has completed
+    if (user && !isLoadingAdmin && !isAdmin) {
+      const timer = setTimeout(() => {
+        toast.error("ليس لديك صلاحية الوصول");
+        navigate("/dashboard");
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [isAdmin, isLoadingAdmin, user, navigate]);
 

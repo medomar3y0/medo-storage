@@ -1,22 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 
 export const useIsAdmin = (user: User | null) => {
   const [isAdmin, setIsAdmin] = useState(false);
+  // Start with loading=true if we might have a user
   const [loading, setLoading] = useState(true);
+  const checkingRef = useRef(false);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      // IMPORTANT: when user changes from null -> user, we must re-enter loading state
-      // to avoid guards redirecting before the admin check completes.
-      setLoading(true);
-
+      // If user is null, we're done loading
       if (!user) {
         setIsAdmin(false);
         setLoading(false);
         return;
       }
+
+      // Prevent double-checking
+      if (checkingRef.current) {
+        return;
+      }
+      checkingRef.current = true;
+
+      // Ensure loading is true before we start
+      setLoading(true);
 
       try {
         const { data, error } = await supabase
@@ -38,11 +46,15 @@ export const useIsAdmin = (user: User | null) => {
         setIsAdmin(false);
       } finally {
         setLoading(false);
+        checkingRef.current = false;
       }
     };
 
     checkAdminStatus();
-  }, [user]);
+  }, [user?.id]); // Only re-run when user.id changes
 
-  return { isAdmin, loading };
+  // If user exists but we haven't finished checking yet, keep loading true
+  const effectiveLoading = user ? loading : false;
+
+  return { isAdmin, loading: effectiveLoading };
 };
