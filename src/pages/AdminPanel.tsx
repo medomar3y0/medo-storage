@@ -4,22 +4,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 import { 
   Users, FileText, Search, 
-  ChevronLeft, Download, Eye, Folder, File, UserCircle
+  ChevronLeft, Download, Eye, Folder, File, UserCircle, 
+  Trash2, Mail, Shield
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
-interface Profile {
+interface AdminUser {
   id: string;
+  email: string;
   username: string | null;
-  name: string | null;
   created_at: string;
+  roles: string[];
 }
 
 interface UserFile {
@@ -43,11 +46,12 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const { isAdmin, loading: isLoadingAdmin } = useIsAdmin(user);
-  const [users, setUsers] = useState<Profile[]>([]);
-  const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [userFiles, setUserFiles] = useState<UserFile[]>([]);
   const [userFolders, setUserFolders] = useState<UserFolder[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({ totalUsers: 0, totalFiles: 0, totalFolders: 0 });
 
   useEffect(() => {
@@ -83,16 +87,31 @@ const AdminPanel = () => {
   }, [isAdmin]);
 
   const fetchUsers = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
+    setLoading(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.access_token) {
+        toast.error("يرجى تسجيل الدخول مجدداً");
+        return;
+      }
 
-    if (error) {
+      const response = await supabase.functions.invoke('list-users', {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`
+        }
+      });
+
+      if (response.error) {
+        console.error("Error fetching users:", response.error);
+        toast.error("فشل تحميل المستخدمين");
+      } else if (response.data?.users) {
+        setUsers(response.data.users);
+      }
+    } catch (error) {
       console.error("Error fetching users:", error);
       toast.error("فشل تحميل المستخدمين");
-    } else {
-      setUsers(data || []);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -128,9 +147,9 @@ const AdminPanel = () => {
     setUserFolders(foldersRes.data || []);
   };
 
-  const handleSelectUser = (profile: Profile) => {
-    setSelectedUser(profile);
-    fetchUserData(profile.id);
+  const handleSelectUser = (adminUser: AdminUser) => {
+    setSelectedUser(adminUser);
+    fetchUserData(adminUser.id);
   };
 
   const viewFile = async (file: UserFile) => {
@@ -169,21 +188,75 @@ const AdminPanel = () => {
     }
   };
 
+  const deleteFile = async (file: UserFile) => {
+    if (!window.confirm(`هل أنت متأكد من حذف الملف "${file.name}"؟`)) return;
+
+    try {
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from("files")
+        .remove([file.file_path]);
+
+      if (storageError) throw storageError;
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from("user_files")
+        .delete()
+        .eq("id", file.id);
+
+      if (dbError) throw dbError;
+
+      toast.success("تم حذف الملف بنجاح");
+      if (selectedUser) {
+        fetchUserData(selectedUser.id);
+      }
+      fetchStats();
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("فشل حذف الملف");
+    }
+  };
+
   const formatFileSize = (bytes: number | null) => {
     if (!bytes) return '';
     const mb = bytes / (1024 * 1024);
     return mb < 1 ? `${(bytes / 1024).toFixed(1)} KB` : `${mb.toFixed(1)} MB`;
   };
 
+  const getRoleBadgeVariant = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'destructive';
+      case 'moderator':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'مسؤول';
+      case 'moderator':
+        return 'مشرف';
+      case 'user':
+        return 'مستخدم';
+      default:
+        return role;
+    }
+  };
+
   const filteredUsers = users.filter(u => 
     (u.username?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (u.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    (u.email?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (isLoadingAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>جاري التحميل...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -245,7 +318,7 @@ const AdminPanel = () => {
               <div className="relative w-full sm:w-64">
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="بحث..."
+                  placeholder="بحث بالإيميل أو اسم المستخدم..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pr-10"
@@ -253,35 +326,57 @@ const AdminPanel = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredUsers.map((profile, index) => (
-                <motion.div
-                  key={profile.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all"
-                    onClick={() => handleSelectUser(profile)}
+            {loading ? (
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">جاري تحميل المستخدمين...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredUsers.map((adminUser, index) => (
+                  <motion.div
+                    key={adminUser.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                          <UserCircle className="h-6 w-6 text-primary" />
+                    <Card 
+                      className="cursor-pointer hover:shadow-lg transition-all"
+                      onClick={() => handleSelectUser(adminUser)}
+                    >
+                      <CardContent className="pt-6">
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <UserCircle className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium truncate">{adminUser.username || "بدون اسم"}</p>
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                              <Mail className="h-3 w-3 shrink-0" />
+                              <span className="truncate">{adminUser.email}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {adminUser.roles.length > 0 ? (
+                                adminUser.roles.map((role) => (
+                                  <Badge key={role} variant={getRoleBadgeVariant(role) as any} className="text-xs">
+                                    {getRoleLabel(role)}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <Badge variant="outline" className="text-xs">مستخدم</Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {new Date(adminUser.created_at).toLocaleDateString('ar')}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{profile.username || profile.name || "بدون اسم"}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(profile.created_at).toLocaleDateString('ar')}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           /* User Details */
@@ -301,9 +396,24 @@ const AdminPanel = () => {
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                     <UserCircle className="h-6 w-6 text-primary" />
                   </div>
-                  <div>
-                    <p>{selectedUser.username || selectedUser.name || "بدون اسم"}</p>
-                    <p className="text-sm font-normal text-muted-foreground">
+                  <div className="flex-1">
+                    <p>{selectedUser.username || "بدون اسم"}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-normal text-muted-foreground">{selectedUser.email}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedUser.roles.length > 0 ? (
+                        selectedUser.roles.map((role) => (
+                          <Badge key={role} variant={getRoleBadgeVariant(role) as any} className="text-xs">
+                            {getRoleLabel(role)}
+                          </Badge>
+                        ))
+                      ) : (
+                        <Badge variant="outline" className="text-xs">مستخدم</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm font-normal text-muted-foreground mt-2">
                       {userFiles.length} ملف • {userFolders.length} مجلد
                     </p>
                   </div>
@@ -355,6 +465,14 @@ const AdminPanel = () => {
                           <Button variant="outline" size="sm" onClick={() => downloadFile(file)} className="flex-1 gap-1">
                             <Download className="h-4 w-4" />
                             تحميل
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => deleteFile(file)}
+                            className="gap-1 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </CardContent>
