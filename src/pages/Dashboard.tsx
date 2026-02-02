@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
@@ -448,13 +448,13 @@ const Dashboard = () => {
                       {/* Privacy Toggle */}
                       <div className="flex items-center justify-between mb-4 p-2 rounded-lg bg-muted/50">
                         <div className="flex items-center gap-2">
-                          <Switch
+                          <Checkbox
                             id={`public-${file.id}`}
                             checked={file.is_public}
                             onCheckedChange={() => toggleFilePublic(file)}
                           />
                           <Label htmlFor={`public-${file.id}`} className="text-sm cursor-pointer">
-                            {file.is_public ? "عام" : "خاص"}
+                            عام
                           </Label>
                         </div>
                       </div>
