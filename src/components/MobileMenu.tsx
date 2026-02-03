@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { 
@@ -23,6 +25,7 @@ export const MobileMenu = () => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
   const { isAdmin } = useIsAdmin(user);
+  const { t } = useLanguage();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -40,7 +43,7 @@ export const MobileMenu = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast.success("تم تسجيل الخروج بنجاح");
+    toast.success(t('logoutSuccess'));
     setOpen(false);
     navigate("/");
   };
@@ -55,12 +58,12 @@ export const MobileMenu = () => {
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="h-10 w-10">
           <Menu className="h-6 w-6" />
-          <span className="sr-only">القائمة</span>
+          <span className="sr-only">{t('menu')}</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-72">
         <SheetHeader>
-          <SheetTitle className="text-right">القائمة</SheetTitle>
+          <SheetTitle className="text-right">{t('menu')}</SheetTitle>
         </SheetHeader>
         <div className="mt-6 flex flex-col gap-2">
           {/* Home */}
@@ -70,7 +73,7 @@ export const MobileMenu = () => {
             onClick={() => handleNavigate("/")}
           >
             <Home className="h-5 w-5" />
-            الصفحة الرئيسية
+            {t('home')}
           </Button>
 
           {user ? (
@@ -82,7 +85,7 @@ export const MobileMenu = () => {
                 onClick={() => handleNavigate("/dashboard")}
               >
                 <FolderOpen className="h-5 w-5" />
-                ملفاتي
+                {t('myFiles')}
               </Button>
 
               {/* Profile */}
@@ -92,7 +95,7 @@ export const MobileMenu = () => {
                 onClick={() => handleNavigate("/profile")}
               >
                 <UserIcon className="h-5 w-5" />
-                الملف الشخصي
+                {t('profile')}
               </Button>
 
               {/* Admin Panel */}
@@ -103,7 +106,7 @@ export const MobileMenu = () => {
                   onClick={() => handleNavigate("/admin")}
                 >
                   <Shield className="h-5 w-5" />
-                  لوحة التحكم
+                  {t('adminPanel')}
                 </Button>
               )}
 
@@ -114,7 +117,7 @@ export const MobileMenu = () => {
                 onClick={handleLogout}
               >
                 <LogOut className="h-5 w-5" />
-                تسجيل الخروج
+                {t('logout')}
               </Button>
             </>
           ) : (
@@ -126,7 +129,7 @@ export const MobileMenu = () => {
                 onClick={() => handleNavigate("/auth")}
               >
                 <LogIn className="h-5 w-5" />
-                تسجيل الدخول
+                {t('login')}
               </Button>
 
               {/* Signup */}
@@ -136,15 +139,21 @@ export const MobileMenu = () => {
                 onClick={() => handleNavigate("/auth?signup=true")}
               >
                 <UserPlus className="h-5 w-5" />
-                إنشاء حساب
+                {t('signup')}
               </Button>
             </>
           )}
 
-          {/* Theme Toggle */}
-          <div className="mt-4 pt-4 border-t flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">الوضع</span>
-            <ThemeToggle />
+          {/* Theme & Language */}
+          <div className="mt-4 pt-4 border-t space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{t('theme')}</span>
+              <ThemeToggle />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{t('language')}</span>
+              <LanguageSelector />
+            </div>
           </div>
         </div>
       </SheetContent>

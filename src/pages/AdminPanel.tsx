@@ -212,6 +212,23 @@ const AdminPanel = () => {
 
       if (dbError) throw dbError;
 
+      // Send notification to file owner
+      if (selectedUser) {
+        try {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              userId: selectedUser.id,
+              title: "تم حذف ملف",
+              message: `تم حذف ملفك "${file.name}" بواسطة المدير`,
+              type: "warning",
+              metadata: { fileName: file.name, deletedBy: user?.email }
+            }
+          });
+        } catch (notifError) {
+          console.error("Failed to send notification:", notifError);
+        }
+      }
+
       toast.success("تم حذف الملف بنجاح");
       if (selectedUser) {
         fetchUserData(selectedUser.id);
