@@ -17,6 +17,7 @@ import {
   ChevronLeft, Share2
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserFolder {
   id: string;
@@ -49,6 +50,7 @@ const Dashboard = () => {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
@@ -128,10 +130,10 @@ const Dashboard = () => {
       });
 
     if (error) {
-      toast.error("فشل إنشاء المجلد");
+      toast.error(t('folderCreatedFailed'));
       console.error(error);
     } else {
-      toast.success("تم إنشاء المجلد بنجاح");
+      toast.success(t('folderCreatedSuccess'));
       setNewFolderName("");
       setFolderDialogOpen(false);
       fetchFolders();
@@ -141,7 +143,7 @@ const Dashboard = () => {
   };
 
   const deleteFolder = async (folderId: string) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا المجلد وجميع ملفاته؟")) return;
+    if (!window.confirm(t('deleteFolderConfirm'))) return;
 
     const { error } = await supabase
       .from("user_folders")
@@ -149,9 +151,9 @@ const Dashboard = () => {
       .eq("id", folderId);
 
     if (error) {
-      toast.error("فشل حذف المجلد");
+      toast.error(t('folderDeletedFailed'));
     } else {
-      toast.success("تم حذف المجلد بنجاح");
+      toast.success(t('folderDeletedSuccess'));
       fetchFolders();
       if (currentFolder?.id === folderId) {
         setCurrentFolder(null);
@@ -203,10 +205,10 @@ const Dashboard = () => {
 
         if (dbError) throw dbError;
         
-        toast.success(`تم رفع ${file.name} بنجاح`);
+        toast.success(t('fileUploadedSuccess'));
       } catch (error) {
         console.error("Upload error:", error);
-        toast.error(`فشل رفع ${file.name}`);
+        toast.error(t('fileUploadedFailed'));
       }
     }
     
@@ -216,7 +218,7 @@ const Dashboard = () => {
   };
 
   const deleteFile = async (file: UserFile) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا الملف؟")) return;
+    if (!window.confirm(t('deleteFileConfirm'))) return;
 
     try {
       const { error: storageError } = await supabase.storage
@@ -232,11 +234,11 @@ const Dashboard = () => {
 
       if (dbError) throw dbError;
 
-      toast.success("تم حذف الملف بنجاح");
+      toast.success(t('fileDeletedSuccess'));
       fetchFiles(currentFolder?.id || null);
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("فشل حذف الملف");
+      toast.error(t('fileDeletedFailed'));
     }
   };
 
@@ -247,9 +249,9 @@ const Dashboard = () => {
       .eq("id", file.id);
 
     if (error) {
-      toast.error("فشل تحديث إعدادات الملف");
+      toast.error(t('error'));
     } else {
-      toast.success(file.is_public ? "الملف الآن خاص" : "الملف الآن عام");
+      toast.success(file.is_public ? t('fileNowPrivate') : t('fileNowPublic'));
       fetchFiles(currentFolder?.id || null);
     }
   };
@@ -257,7 +259,7 @@ const Dashboard = () => {
   const copyShareLink = (file: UserFile) => {
     const link = `${window.location.origin}/s/${file.share_code}`;
     navigator.clipboard.writeText(link);
-    toast.success("تم نسخ الرابط");
+    toast.success(t('linkCopied'));
   };
 
   const viewFile = async (file: UserFile) => {
@@ -271,7 +273,7 @@ const Dashboard = () => {
         window.open(data.signedUrl, '_blank');
       }
     } catch (error) {
-      toast.error("فشل فتح الملف");
+      toast.error(t('fileOpenFailed'));
     }
   };
 
@@ -291,9 +293,9 @@ const Dashboard = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("تم تحميل الملف");
+      toast.success(t('fileDownloaded'));
     } catch (error) {
-      toast.error("فشل تحميل الملف");
+      toast.error(t('fileDownloadFailed'));
     }
   };
 
@@ -305,7 +307,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      <Header title="ملفاتي" />
+      <Header title={t('myFiles')} />
 
       {/* Main Content */}
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -320,11 +322,11 @@ const Dashboard = () => {
                 className="gap-1"
               >
                 <ChevronLeft className="h-4 w-4" />
-                العودة
+                {t('back')}
               </Button>
             )}
             <h2 className="text-xl font-semibold">
-              {currentFolder ? currentFolder.name : "ملفاتي"}
+              {currentFolder ? currentFolder.name : t('myFiles')}
             </h2>
           </div>
           
@@ -334,27 +336,27 @@ const Dashboard = () => {
                 <DialogTrigger asChild>
                   <Button variant="outline" className="gap-2">
                     <FolderPlus className="h-4 w-4" />
-                    <span className="hidden sm:inline">مجلد جديد</span>
+                    <span className="hidden sm:inline">{t('newFolder')}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>إنشاء مجلد جديد</DialogTitle>
+                    <DialogTitle>{t('createNewFolder')}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label htmlFor="folderName">اسم المجلد</Label>
+                      <Label htmlFor="folderName">{t('folderName')}</Label>
                       <Input
                         id="folderName"
                         value={newFolderName}
                         onChange={(e) => setNewFolderName(e.target.value)}
-                        placeholder="أدخل اسم المجلد"
+                        placeholder={t('enterFolderName')}
                       />
                     </div>
                   </div>
                   <DialogFooter>
                     <Button onClick={createFolder} disabled={isCreatingFolder || !newFolderName.trim()}>
-                      {isCreatingFolder ? "جاري الإنشاء..." : "إنشاء"}
+                      {isCreatingFolder ? t('creating') : t('create')}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -365,7 +367,7 @@ const Dashboard = () => {
               <Button variant="default" className="gap-2" asChild>
                 <span>
                   <Upload className="h-4 w-4" />
-                  <span className="hidden sm:inline">{uploading ? "جاري الرفع..." : "رفع ملف"}</span>
+                  <span className="hidden sm:inline">{uploading ? t('uploading') : t('uploadFile')}</span>
                 </span>
               </Button>
               <Input
@@ -382,7 +384,7 @@ const Dashboard = () => {
         {/* Folders Grid (only show if not in a folder) */}
         {!currentFolder && folders.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-lg font-medium mb-4">المجلدات</h3>
+            <h3 className="text-lg font-medium mb-4">{t('folders')}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {folders.map((folder, index) => (
                 <motion.div
@@ -406,7 +408,7 @@ const Dashboard = () => {
                           e.stopPropagation();
                           deleteFolder(folder.id);
                         }}
-                        aria-label="حذف المجلد"
+                        aria-label={t('delete')}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
@@ -420,7 +422,7 @@ const Dashboard = () => {
 
         {/* Files Grid */}
         <div>
-          <h3 className="text-lg font-medium mb-4">الملفات</h3>
+          <h3 className="text-lg font-medium mb-4">{t('files')}</h3>
           {files.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {files.map((file, index) => (
@@ -454,7 +456,7 @@ const Dashboard = () => {
                             onCheckedChange={() => toggleFilePublic(file)}
                           />
                           <Label htmlFor={`public-${file.id}`} className="text-sm cursor-pointer">
-                            عام
+                            {t('public')}
                           </Label>
                         </div>
                       </div>
@@ -502,9 +504,9 @@ const Dashboard = () => {
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/50 mb-6">
                 <File className="w-10 h-10 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">لا توجد ملفات</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('noFilesYet')}</h3>
               <p className="text-muted-foreground">
-                ابدأ برفع ملفاتك هنا
+                {t('uploadFirstFile')}
               </p>
             </div>
           )}

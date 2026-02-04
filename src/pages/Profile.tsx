@@ -11,6 +11,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { Eye, EyeOff, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 import { changePasswordSchema, changeUsernameSchema } from "@/lib/authValidation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const Profile = () => {
   const [passwordForUsername, setPasswordForUsername] = useState("");
   const [showPasswordForUsername, setShowPasswordForUsername] = useState(false);
   const [userRoles, setUserRoles] = useState<string[]>([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
@@ -101,12 +103,12 @@ const Profile = () => {
 
       if (error) throw error;
 
-      toast.success("تم تغيير كلمة المرور بنجاح");
+      toast.success(t('passwordUpdatedSuccess'));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
-      toast.error(error.message || "حدث خطأ أثناء تغيير كلمة المرور");
+      toast.error(error.message || t('error'));
     } finally {
       setLoading(false);
     }
@@ -127,7 +129,7 @@ const Profile = () => {
     }
 
     if (newUsername === username) {
-      toast.error("اسم المستخدم الجديد مطابق للقديم");
+      toast.error(t('usernameSameAsOld'));
       return;
     }
 
@@ -135,7 +137,7 @@ const Profile = () => {
 
     try {
       // Verify password first
-      if (!user?.email) throw new Error("لم يتم العثور على البريد الإلكتروني");
+      if (!user?.email) throw new Error(t('emailNotFound'));
       
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: user.email,
@@ -143,7 +145,7 @@ const Profile = () => {
       });
 
       if (signInError) {
-        toast.error("كلمة المرور غير صحيحة");
+        toast.error(t('wrongPassword'));
         setLoading(false);
         return;
       }
@@ -156,7 +158,7 @@ const Profile = () => {
         .maybeSingle();
 
       if (existingUser) {
-        toast.error("اسم المستخدم مستخدم بالفعل");
+        toast.error(t('usernameAlreadyTaken'));
         setLoading(false);
         return;
       }
@@ -169,23 +171,23 @@ const Profile = () => {
 
       if (updateError) throw updateError;
 
-      toast.success("تم تغيير اسم المستخدم بنجاح");
+      toast.success(t('usernameUpdatedSuccess'));
       setUsername(newUsername);
       setNewUsername("");
       setPasswordForUsername("");
     } catch (error: any) {
-      toast.error(error.message || "حدث خطأ أثناء تغيير اسم المستخدم");
+      toast.error(error.message || t('error'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm("هل أنت متأكد من حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه!")) {
+    if (!confirm(t('deleteAccountConfirm'))) {
       return;
     }
 
-    if (!confirm("تحذير: سيتم حذف حسابك وجميع بياناتك نهائياً. هل تريد المتابعة؟")) {
+    if (!confirm(t('deleteAccountFinalConfirm'))) {
       return;
     }
 
@@ -193,7 +195,7 @@ const Profile = () => {
 
     try {
       if (!user?.id) {
-        throw new Error("لم يتم العثور على معرف المستخدم");
+        throw new Error(t('userIdNotFound'));
       }
 
       // Call edge function to delete user
@@ -206,11 +208,11 @@ const Profile = () => {
       // Sign out
       await supabase.auth.signOut();
       
-      toast.success("تم حذف الحساب بنجاح");
+      toast.success(t('accountDeletedSuccess'));
       navigate("/");
     } catch (error: any) {
       console.error("Error deleting account:", error);
-      toast.error(error.message || "حدث خطأ أثناء حذف الحساب");
+      toast.error(error.message || t('error'));
       setLoading(false);
     }
   };
@@ -219,9 +221,19 @@ const Profile = () => {
     return null;
   }
 
+  const getRoleName = (role: string) => {
+    switch (role) {
+      case "admin": return t('admin');
+      case "moderator": return t('moderator');
+      case "downloader": return t('downloader');
+      case "viewer": return t('viewer');
+      default: return role;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      <Header title="الملف الشخصي" />
+      <Header title={t('profile')} />
 
       {/* Main Content */}
       <div className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -231,13 +243,13 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserCircle className="h-6 w-6" />
-                معلومات الحساب
+                {t('accountInfo')}
               </CardTitle>
-              <CardDescription>بيانات حسابك الشخصية</CardDescription>
+              <CardDescription>{t('yourPersonalData')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>البريد الإلكتروني</Label>
+                <Label>{t('email')}</Label>
                 <Input
                   type="email"
                   value={user.email || ""}
@@ -246,35 +258,32 @@ const Profile = () => {
                 />
               </div>
               <div>
-                <Label>اسم المستخدم</Label>
+                <Label>{t('username')}</Label>
                 <Input
-                  value={username || "لم يتم تعيين اسم مستخدم"}
+                  value={username || t('usernameNotSet')}
                   disabled
                   className="bg-muted/50"
                 />
               </div>
               <div>
-                <Label>الصلاحيات</Label>
+                <Label>{t('permissions')}</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {userRoles.length === 0 ? (
-                    <span className="text-sm text-muted-foreground">لا توجد صلاحيات</span>
+                    <span className="text-sm text-muted-foreground">{t('noPermissions')}</span>
                   ) : (
                     userRoles.map((role) => (
                       <span
                         key={role}
                         className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20"
                       >
-                        {role === "admin" && "مدير"}
-                        {role === "moderator" && "محرر"}
-                        {role === "downloader" && "محمل"}
-                        {role === "viewer" && "مشاهد"}
+                        {getRoleName(role)}
                       </span>
                     ))
                   )}
                 </div>
               </div>
               <div>
-                <Label>تاريخ الإنشاء</Label>
+                <Label>{t('createdAt')}</Label>
                 <Input
                   value={new Date(user.created_at).toLocaleDateString('ar-EG', {
                     year: 'numeric',
@@ -291,30 +300,30 @@ const Profile = () => {
           {/* Change Username Card */}
           <Card>
             <CardHeader>
-              <CardTitle>تغيير اسم المستخدم</CardTitle>
-              <CardDescription>قم بتحديث اسم المستخدم الخاص بك</CardDescription>
+              <CardTitle>{t('changeUsername')}</CardTitle>
+              <CardDescription>{t('updateYourUsername')}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleChangeUsername} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newUsername">اسم المستخدم الجديد</Label>
+                  <Label htmlFor="newUsername">{t('newUsername')}</Label>
                   <Input
                     id="newUsername"
                     type="text"
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
-                    placeholder="أدخل اسم المستخدم الجديد"
+                    placeholder={t('enterNewUsername')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="passwordForUsername">كلمة المرور للتأكيد</Label>
+                  <Label htmlFor="passwordForUsername">{t('passwordConfirm')}</Label>
                   <div className="relative">
                     <Input
                       id="passwordForUsername"
                       type={showPasswordForUsername ? "text" : "password"}
                       value={passwordForUsername}
                       onChange={(e) => setPasswordForUsername(e.target.value)}
-                      placeholder="أدخل كلمة المرور الحالية"
+                      placeholder={t('enterCurrentPassword')}
                       className="pr-10"
                     />
                     <Button
@@ -333,7 +342,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? "جاري التحديث..." : "تحديث اسم المستخدم"}
+                  {loading ? t('updating') : t('updateUsername')}
                 </Button>
               </form>
             </CardContent>
@@ -342,13 +351,13 @@ const Profile = () => {
           {/* Change Password Card */}
           <Card>
             <CardHeader>
-              <CardTitle>تغيير كلمة المرور</CardTitle>
-              <CardDescription>قم بتحديث كلمة المرور الخاصة بك</CardDescription>
+              <CardTitle>{t('changePassword')}</CardTitle>
+              <CardDescription>{t('updateYourPassword')}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">كلمة المرور الجديدة</Label>
+                  <Label htmlFor="newPassword">{t('newPassword')}</Label>
                   <div className="relative">
                     <Input
                       id="newPassword"
@@ -356,7 +365,7 @@ const Profile = () => {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
-                      placeholder="أدخل كلمة المرور الجديدة"
+                      placeholder={t('enterNewPassword')}
                       className="pr-10"
                     />
                     <Button
@@ -376,7 +385,7 @@ const Profile = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">تأكيد كلمة المرور</Label>
+                  <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
@@ -384,7 +393,7 @@ const Profile = () => {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
-                      placeholder="أعد إدخال كلمة المرور الجديدة"
+                      placeholder={t('reenterNewPassword')}
                       className="pr-10"
                     />
                     <Button
@@ -404,7 +413,7 @@ const Profile = () => {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "جاري التحديث..." : "تحديث كلمة المرور"}
+                  {loading ? t('updating') : t('updatePassword')}
                 </Button>
               </form>
             </CardContent>
@@ -413,8 +422,8 @@ const Profile = () => {
           {/* Delete Account Card */}
           <Card className="border-destructive">
             <CardHeader>
-              <CardTitle className="text-destructive">منطقة الخطر</CardTitle>
-              <CardDescription>حذف الحساب نهائياً - هذا الإجراء لا يمكن التراجع عنه</CardDescription>
+              <CardTitle className="text-destructive">{t('dangerZone')}</CardTitle>
+              <CardDescription>{t('deleteAccountWarning')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -423,7 +432,7 @@ const Profile = () => {
                 disabled={loading}
                 className="w-full"
               >
-                {loading ? "جاري الحذف..." : "حذف الحساب نهائياً"}
+                {loading ? t('deleting') : t('deleteAccount')}
               </Button>
             </CardContent>
           </Card>
