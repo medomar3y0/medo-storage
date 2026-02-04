@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Upload, FolderOpen, Share2, Shield } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -29,23 +31,23 @@ const Home = () => {
   const features = [
     {
       icon: Upload,
-      title: "رفع الملفات",
-      description: "ارفع ملفاتك بسهولة وأمان من أي جهاز"
+      title: t('featureUpload'),
+      description: t('featureUploadDesc')
     },
     {
       icon: FolderOpen,
-      title: "تنظيم المجلدات",
-      description: "نظم ملفاتك في مجلدات لسهولة الوصول"
+      title: t('folders'),
+      description: t('featureUploadDesc')
     },
     {
       icon: Share2,
-      title: "مشاركة سهلة",
-      description: "شارك ملفاتك برابط مختصر مع امتداد الملف"
+      title: t('featureShare'),
+      description: t('featureShareDesc')
     },
     {
       icon: Shield,
-      title: "خصوصية كاملة",
-      description: "تحكم في خصوصية ملفاتك (عام أو خاص)"
+      title: t('featureSecure'),
+      description: t('featureSecureDesc')
     }
   ];
 
@@ -60,7 +62,7 @@ const Home = () => {
             MEDO STORAGE
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            منصة تخزين ملفاتك الشخصية بأمان مع إمكانية المشاركة السهلة
+            {t('heroDescription')}
           </p>
         </div>
 
@@ -72,7 +74,7 @@ const Home = () => {
                 <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
                   <feature.icon className="w-7 h-7 text-primary" />
                 </div>
-                <div className="flex-1 text-right">
+                <div className="flex-1">
                   <CardTitle className="text-lg mb-1">{feature.title}</CardTitle>
                   <CardDescription>{feature.description}</CardDescription>
                 </div>
@@ -81,27 +83,11 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Instructions */}
-        <Card className="max-w-4xl mx-auto w-full">
-          <CardHeader>
-            <CardTitle className="text-center">كيفية الاستخدام</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <ol className="list-decimal list-inside space-y-3 text-muted-foreground">
-              <li>قم بإنشاء حساب جديد أو سجل الدخول إذا كان لديك حساب</li>
-              <li>أنشئ مجلدات لتنظيم ملفاتك</li>
-              <li>ارفع ملفاتك داخل المجلدات</li>
-              <li>اختر خصوصية كل ملف (عام أو خاص)</li>
-              <li>شارك الملفات العامة برابط مختصر مع امتداد الملف</li>
-            </ol>
-          </CardContent>
-        </Card>
-
         {/* CTA */}
         {!user && (
           <div className="mt-8 flex gap-4">
             <Button size="lg" onClick={() => navigate("/auth?signup=true")} className="gap-2">
-              ابدأ الآن مجاناً
+              {t('getStarted')}
             </Button>
           </div>
         )}

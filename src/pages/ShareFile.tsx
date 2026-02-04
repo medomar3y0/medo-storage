@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Download, Eye, File, AlertCircle, Home } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SharedFile {
   id: string;
@@ -23,11 +24,12 @@ const ShareFile = () => {
   const [file, setFile] = useState<SharedFile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchFile = async () => {
       if (!shareCode) {
-        setError("رابط غير صالح");
+        setError(t('invalidLink'));
         setLoading(false);
         return;
       }
@@ -42,13 +44,13 @@ const ShareFile = () => {
         .single();
 
       if (error || !data) {
-        setError("الملف غير موجود");
+        setError(t('fileNotFound'));
         setLoading(false);
         return;
       }
 
       if (!data.is_public) {
-        setError("هذا الملف خاص وغير متاح للعرض");
+        setError(t('fileIsPrivate'));
         setLoading(false);
         return;
       }
@@ -58,7 +60,7 @@ const ShareFile = () => {
     };
 
     fetchFile();
-  }, [shareCode]);
+  }, [shareCode, t]);
 
   const viewFile = async () => {
     if (!file) return;
@@ -73,7 +75,7 @@ const ShareFile = () => {
         window.open(data.signedUrl, '_blank');
       }
     } catch (err) {
-      toast.error("فشل فتح الملف");
+      toast.error(t('fileOpenFailed'));
     }
   };
 
@@ -95,9 +97,9 @@ const ShareFile = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("تم تحميل الملف");
+      toast.success(t('fileDownloaded'));
     } catch (err) {
-      toast.error("فشل تحميل الملف");
+      toast.error(t('fileDownloadFailed'));
     }
   };
 
@@ -109,14 +111,14 @@ const ShareFile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      <Header title="مشاركة ملف" />
+      <Header title={t('shareFile')} />
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-16">
         {loading ? (
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">جاري تحميل الملف...</p>
+            <p className="text-muted-foreground">{t('loadingFile')}</p>
           </div>
         ) : error ? (
           <Card className="max-w-md w-full">
@@ -124,11 +126,11 @@ const ShareFile = () => {
               <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="h-8 w-8 text-destructive" />
               </div>
-              <h2 className="text-xl font-semibold mb-2">خطأ</h2>
+              <h2 className="text-xl font-semibold mb-2">{t('error')}</h2>
               <p className="text-muted-foreground mb-6">{error}</p>
               <Button onClick={() => navigate("/")} className="gap-2">
                 <Home className="h-4 w-4" />
-                العودة للرئيسية
+                {t('backToHome')}
               </Button>
             </CardContent>
           </Card>
@@ -148,11 +150,11 @@ const ShareFile = () => {
             <CardContent className="space-y-4">
               <Button onClick={viewFile} className="w-full gap-2">
                 <Eye className="h-4 w-4" />
-                معاينة الملف
+                {t('previewFile')}
               </Button>
               <Button onClick={downloadFile} variant="outline" className="w-full gap-2">
                 <Download className="h-4 w-4" />
-                تحميل الملف
+                {t('downloadFile')}
               </Button>
             </CardContent>
           </Card>

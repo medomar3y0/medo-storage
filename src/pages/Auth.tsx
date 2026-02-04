@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { User, Session } from "@supabase/supabase-js";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import { signUpSchema, signInSchema } from "@/lib/authValidation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -23,6 +24,7 @@ const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -73,7 +75,7 @@ const Auth = () => {
           }
         });
         if (error) throw error;
-        toast.success("تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن");
+        toast.success(t('accountCreatedSuccess'));
         setIsSignUp(false);
       } else {
         // Validate signin data
@@ -89,15 +91,15 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        toast.success("تم تسجيل الدخول بنجاح");
+        toast.success(t('loginSuccess'));
       }
     } catch (error: any) {
       if (error.message === "User already registered") {
-        toast.error("هذا البريد مسجل بالفعل، جرب تسجيل الدخول");
+        toast.error(t('emailAlreadyRegistered'));
       } else if (error.message === "Invalid login credentials") {
-        toast.error("البريد أو كلمة المرور غير صحيحة");
+        toast.error(t('invalidCredentials'));
       } else {
-        toast.error(error.message || "حدث خطأ");
+        toast.error(error.message || t('error'));
       }
     } finally {
       setLoading(false);
@@ -106,7 +108,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-secondary/20">
-      <Header title={isSignUp ? "إنشاء حساب" : "تسجيل الدخول"} />
+      <Header title={isSignUp ? t('createAccount') : t('login')} />
 
       <div className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl">
@@ -114,37 +116,37 @@ const Auth = () => {
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-2">
               <Lock className="w-8 h-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">{isSignUp ? "إنشاء حساب" : "تسجيل الدخول"}</CardTitle>
-            <CardDescription>{isSignUp ? "أدخل بياناتك لإنشاء حساب جديد" : "أدخل بياناتك للوصول إلى ملفاتك"}</CardDescription>
+            <CardTitle className="text-2xl">{isSignUp ? t('createAccount') : t('login')}</CardTitle>
+            <CardDescription>{isSignUp ? `${t('enterYourData')} ${t('createNewAccount')}` : `${t('enterYourData')} ${t('accessYourFiles')}`}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAuth} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">البريد الإلكتروني</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="example@email.com"
+                  placeholder={t('enterEmail')}
                 />
               </div>
               {isSignUp && (
                 <div className="space-y-2">
-                  <Label htmlFor="username">اسم المستخدم</Label>
+                  <Label htmlFor="username">{t('username')}</Label>
                   <Input
                     id="username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
-                    placeholder="أدخل اسم المستخدم"
+                    placeholder={t('enterUsername')}
                   />
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="password">كلمة المرور</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -164,7 +166,7 @@ const Auth = () => {
                 </div>
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "جاري التحميل..." : isSignUp ? "إنشاء حساب" : "تسجيل الدخول"}
+                {loading ? t('loading') : isSignUp ? t('createAccount') : t('login')}
               </Button>
             </form>
             <div className="mt-4 text-center">
@@ -173,7 +175,7 @@ const Auth = () => {
                 onClick={() => setIsSignUp(!isSignUp)}
                 className="text-sm text-primary hover:underline"
               >
-                {isSignUp ? "لديك حساب بالفعل؟ سجل الدخول" : "ليس لديك حساب؟ أنشئ واحداً"}
+                {isSignUp ? t('alreadyHaveAccount') : t('noAccount')}
               </button>
             </div>
           </CardContent>
