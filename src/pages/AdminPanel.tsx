@@ -12,8 +12,12 @@ import { User } from "@supabase/supabase-js";
 import { 
   Users, FileText, Search, 
   ChevronLeft, Download, Eye, Folder, File, UserCircle, 
-  Trash2, Mail, Shield
+  Trash2, Mail, Shield, Bell, Send
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
@@ -53,6 +57,11 @@ const AdminPanel = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({ totalUsers: 0, totalFiles: 0, totalFolders: 0 });
+  const [broadcastDialogOpen, setBroadcastDialogOpen] = useState(false);
+  const [broadcastTitle, setBroadcastTitle] = useState("");
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
@@ -90,6 +99,36 @@ const AdminPanel = () => {
       fetchStats();
     }
   }, [isAdmin]);
+
+  const sendBroadcastNotification = async () => {
+    if (!broadcastTitle.trim() || !broadcastMessage.trim()) return;
+    
+    setSendingBroadcast(true);
+    try {
+      const response = await supabase.functions.invoke('send-notification', {
+        body: {
+          broadcast: true,
+          title: broadcastTitle,
+          message: broadcastMessage,
+          type: "info"
+        }
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      toast.success(t('notificationSentToAll'));
+      setBroadcastDialogOpen(false);
+      setBroadcastTitle("");
+      setBroadcastMessage("");
+    } catch (error) {
+      console.error("Error sending broadcast:", error);
+      toast.error(t('notificationFailed'));
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -330,6 +369,54 @@ const AdminPanel = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Broadcast Notification Button */}
+        <div className="mb-6">
+          <Dialog open={broadcastDialogOpen} onOpenChange={setBroadcastDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Bell className="h-4 w-4" />
+                {t('broadcastNotification')}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t('broadcastNotification')}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="broadcastTitle">{t('notificationTitle')}</Label>
+                  <Input
+                    id="broadcastTitle"
+                    value={broadcastTitle}
+                    onChange={(e) => setBroadcastTitle(e.target.value)}
+                    placeholder={t('notificationTitle')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="broadcastMessage">{t('notificationMessage')}</Label>
+                  <Textarea
+                    id="broadcastMessage"
+                    value={broadcastMessage}
+                    onChange={(e) => setBroadcastMessage(e.target.value)}
+                    placeholder={t('notificationMessage')}
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  onClick={sendBroadcastNotification} 
+                  disabled={sendingBroadcast || !broadcastTitle.trim() || !broadcastMessage.trim()}
+                  className="gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  {sendingBroadcast ? t('sending') : t('send')}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {!selectedUser ? (

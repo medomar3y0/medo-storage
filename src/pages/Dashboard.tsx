@@ -14,7 +14,7 @@ import { User } from "@supabase/supabase-js";
 import { 
   FolderPlus, Upload, Folder, File, 
   Trash2, Download, Eye, Copy, Link,
-  ChevronLeft, Share2, FolderDown, ChevronRight
+  ChevronLeft, Share2, FolderDown, ChevronRight, Grid3X3, List, FolderOpen
 } from "lucide-react";
 import { useFolderDownload } from "@/hooks/useFolderDownload";
 import { motion } from "framer-motion";
@@ -26,6 +26,8 @@ interface UserFolder {
   user_id: string;
   created_at: string;
   parent_id: string | null;
+  share_code: string | null;
+  is_public: boolean;
 }
 
 interface UserFile {
@@ -53,6 +55,9 @@ const Dashboard = () => {
   const [uploading, setUploading] = useState(false);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [folderPath, setFolderPath] = useState<UserFolder[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    return (localStorage.getItem('fileViewMode') as 'grid' | 'list') || 'grid';
+  });
   const { downloadFolder, downloading: downloadingFolder } = useFolderDownload();
   const { t } = useLanguage();
 
@@ -73,6 +78,44 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const toggleViewMode = () => {
+    const newMode = viewMode === 'grid' ? 'list' : 'grid';
+    setViewMode(newMode);
+    localStorage.setItem('fileViewMode', newMode);
+  };
+
+  const generateFolderShareCode = async (folder: UserFolder) => {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    const { error } = await supabase
+      .from("user_folders")
+      .update({ share_code: code, is_public: true })
+      .eq("id", folder.id);
+
+    if (error) {
+      toast.error(t('error'));
+    } else {
+      toast.success(t('linkCopied'));
+      const link = `${window.location.origin}/folder/${code}`;
+      navigator.clipboard.writeText(link);
+      fetchFolders(currentFolder?.id || null);
+    }
+  };
+
+  const copyFolderLink = (folder: UserFolder) => {
+    if (folder.share_code) {
+      const link = `${window.location.origin}/folder/${folder.share_code}`;
+      navigator.clipboard.writeText(link);
+      toast.success(t('folderLinkCopied'));
+    } else {
+      generateFolderShareCode(folder);
+    }
+  };
 
   const fetchFolders = useCallback(async (parentId: string | null = null) => {
     if (!user) return;
@@ -441,6 +484,42 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Current folder actions (download & share) */}
+        {currentFolder && (
+          <Card className="mb-6">
+            <CardContent className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-3">
+                <FolderOpen className="h-8 w-8 text-primary" />
+                <div>
+                  <p className="font-medium">{currentFolder.name}</p>
+                  <p className="text-sm text-muted-foreground">{files.length} {t('files')}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => handleDownloadFolder(currentFolder)}
+                  disabled={downloadingFolder}
+                >
+                  <Download className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('downloadFolder')}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => copyFolderLink(currentFolder)}
+                >
+                  <Share2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('shareFolder')}</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Folders Grid */}
         {folders.length > 0 && (
           <div className="mb-8">
@@ -475,6 +554,18 @@ const Dashboard = () => {
                         >
                           <FolderDown className="h-3 w-3" />
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyFolderLink(folder);
+                          }}
+                          aria-label={t('shareFolder')}
+                        >
+                          <Share2 className="h-3 w-3" />
+                        </Button>
                       </div>
                       <Button
                         variant="outline"
@@ -496,11 +587,25 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Files Grid */}
+        {/* Files Section */}
         <div>
-          <h3 className="text-lg font-medium mb-4">{t('files')}</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium">{t('files')}</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleViewMode}
+              className="gap-2"
+            >
+              {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
+              <span className="hidden sm:inline">{viewMode === 'grid' ? t('listView') : t('gridView')}</span>
+            </Button>
+          </div>
           {files.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className={viewMode === 'grid' 
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" 
+              : "flex flex-col gap-2"
+            }>
               {files.map((file, index) => (
                 <motion.div
                   key={file.id}
@@ -508,69 +613,107 @@ const Dashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start gap-3">
+                  <Card className={viewMode === 'list' ? 'p-0' : ''}>
+                    {viewMode === 'grid' ? (
+                      <>
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10">
+                              <File className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <CardTitle className="text-sm truncate">{file.name}</CardTitle>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {formatFileSize(file.file_size)}
+                              </p>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          {/* Privacy Toggle */}
+                          <div className="flex items-center justify-between mb-4 p-2 rounded-lg bg-muted/50">
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                id={`public-${file.id}`}
+                                checked={file.is_public}
+                                onCheckedChange={() => toggleFilePublic(file)}
+                              />
+                              <Label htmlFor={`public-${file.id}`} className="text-sm cursor-pointer">
+                                {t('public')}
+                              </Label>
+                            </div>
+                          </div>
+
+                          {/* Share Link */}
+                          {file.share_code && (
+                            <div className="flex items-center gap-2 mb-4 p-2 rounded-lg bg-muted/30">
+                              <Link className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <code className="text-xs truncate flex-1 direction-ltr text-left">
+                                /s/{file.share_code}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyShareLink(file)}
+                                className="shrink-0"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Action Buttons */}
+                          <div className="grid grid-cols-4 gap-2">
+                            <Button variant="outline" size="sm" onClick={() => viewFile(file)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => downloadFile(file)}>
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => copyShareLink(file)}>
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => deleteFile(file)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </>
+                    ) : (
+                      /* List View */
+                      <div className="flex items-center gap-4 p-4">
                         <div className="p-2 rounded-lg bg-primary/10">
                           <File className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-sm truncate">{file.name}</CardTitle>
+                          <p className="font-medium truncate">{file.name}</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {formatFileSize(file.file_size)}
                           </p>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {/* Privacy Toggle */}
-                      <div className="flex items-center justify-between mb-4 p-2 rounded-lg bg-muted/50">
                         <div className="flex items-center gap-2">
                           <Checkbox
                             id={`public-${file.id}`}
                             checked={file.is_public}
                             onCheckedChange={() => toggleFilePublic(file)}
                           />
-                          <Label htmlFor={`public-${file.id}`} className="text-sm cursor-pointer">
-                            {t('public')}
-                          </Label>
                         </div>
-                      </div>
-
-                      {/* Share Link */}
-                      {file.share_code && (
-                        <div className="flex items-center gap-2 mb-4 p-2 rounded-lg bg-muted/30">
-                          <Link className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <code className="text-xs truncate flex-1 direction-ltr text-left">
-                            /s/{file.share_code}
-                          </code>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyShareLink(file)}
-                            className="shrink-0"
-                          >
-                            <Copy className="h-3 w-3" />
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => viewFile(file)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => downloadFile(file)}>
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyShareLink(file)}>
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteFile(file)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
-                      )}
-
-                      {/* Action Buttons */}
-                      <div className="grid grid-cols-4 gap-2">
-                        <Button variant="outline" size="sm" onClick={() => viewFile(file)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => downloadFile(file)}>
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => copyShareLink(file)}>
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => deleteFile(file)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
                       </div>
-                    </CardContent>
+                    )}
                   </Card>
                 </motion.div>
               ))}
