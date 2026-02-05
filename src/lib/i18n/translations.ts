@@ -72,6 +72,15 @@ export const translations = {
     noFilesYet: "لا توجد ملفات بعد",
     uploadFirstFile: "قم برفع أول ملف لك",
     
+    // Nested folders
+    currentLocation: "الموقع الحالي",
+    rootFolder: "المجلد الرئيسي",
+    downloadFolder: "تحميل المجلد",
+    downloadingFolder: "جاري تحميل المجلد...",
+    folderDownloadSuccess: "تم تحميل المجلد بنجاح",
+    folderDownloadFailed: "فشل تحميل المجلد",
+    noFilesInFolder: "لا توجد ملفات في هذا المجلد",
+    
     // Share
     shareFile: "مشاركة ملف",
     previewFile: "معاينة الملف",
@@ -232,6 +241,15 @@ export const translations = {
     noFilesYet: "No files yet",
     uploadFirstFile: "Upload your first file",
     
+    // Nested folders
+    currentLocation: "Current location",
+    rootFolder: "Root folder",
+    downloadFolder: "Download Folder",
+    downloadingFolder: "Downloading folder...",
+    folderDownloadSuccess: "Folder downloaded successfully",
+    folderDownloadFailed: "Failed to download folder",
+    noFilesInFolder: "No files in this folder",
+    
     // Share
     shareFile: "Share File",
     previewFile: "Preview File",
@@ -391,6 +409,15 @@ export const translations = {
     fileOpenFailed: "Échec de l'ouverture du fichier",
     noFilesYet: "Pas encore de fichiers",
     uploadFirstFile: "Téléversez votre premier fichier",
+    
+    // Nested folders
+    currentLocation: "Emplacement actuel",
+    rootFolder: "Dossier racine",
+    downloadFolder: "Télécharger le dossier",
+    downloadingFolder: "Téléchargement du dossier...",
+    folderDownloadSuccess: "Dossier téléchargé avec succès",
+    folderDownloadFailed: "Échec du téléchargement du dossier",
+    noFilesInFolder: "Aucun fichier dans ce dossier",
     
     // Share
     shareFile: "Partager le fichier",

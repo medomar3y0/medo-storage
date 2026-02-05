@@ -55,7 +55,7 @@ export const NotificationBell = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9">
+        <Button variant="ghost" size="icon" className="relative h-9 w-9 shrink-0">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
@@ -65,7 +65,7 @@ export const NotificationBell = () => {
           <span className="sr-only">{t('notifications')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-72 sm:w-80 max-w-[calc(100vw-2rem)]">
         <div className="flex items-center justify-between px-3 py-2 border-b">
           <span className="font-semibold">{t('notifications')}</span>
           {notifications.length > 0 && (
@@ -89,7 +89,7 @@ export const NotificationBell = () => {
             </div>
           )}
         </div>
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="max-h-[60vh] min-h-[200px]">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
               {t('noNotifications')}

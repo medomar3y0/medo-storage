@@ -13,9 +13,10 @@ import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 import { 
   FolderPlus, Upload, Folder, File, 
-  Trash2, Download, Eye, Copy, Link, 
-  ChevronLeft, Share2
+  Trash2, Download, Eye, Copy, Link,
+  ChevronLeft, Share2, FolderDown, ChevronRight
 } from "lucide-react";
+import { useFolderDownload } from "@/hooks/useFolderDownload";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -24,6 +25,7 @@ interface UserFolder {
   name: string;
   user_id: string;
   created_at: string;
+  parent_id: string | null;
 }
 
 interface UserFile {
@@ -50,6 +52,8 @@ const Dashboard = () => {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const [folderPath, setFolderPath] = useState<UserFolder[]>([]);
+  const { downloadFolder, downloading: downloadingFolder } = useFolderDownload();
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -70,14 +74,21 @@ const Dashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const fetchFolders = useCallback(async () => {
+  const fetchFolders = useCallback(async (parentId: string | null = null) => {
     if (!user) return;
     
-    const { data, error } = await supabase
+    let query = supabase
       .from("user_folders")
       .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+      .eq("user_id", user.id);
+    
+    if (parentId) {
+      query = query.eq("parent_id", parentId);
+    } else {
+      query = query.is("parent_id", null);
+    }
+    
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching folders:", error);
@@ -112,10 +123,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      fetchFolders();
+      fetchFolders(currentFolder?.id || null);
       fetchFiles(currentFolder?.id || null);
     }
-  }, [user, currentFolder, fetchFolders, fetchFiles]);
+  }, [user, currentFolder?.id, fetchFolders, fetchFiles]);
 
   const createFolder = async () => {
     if (!newFolderName.trim() || !user) return;
@@ -126,7 +137,8 @@ const Dashboard = () => {
       .from("user_folders")
       .insert({
         name: newFolderName.trim(),
-        user_id: user.id
+        user_id: user.id,
+        parent_id: currentFolder?.id || null
       });
 
     if (error) {
@@ -136,7 +148,7 @@ const Dashboard = () => {
       toast.success(t('folderCreatedSuccess'));
       setNewFolderName("");
       setFolderDialogOpen(false);
-      fetchFolders();
+      fetchFolders(currentFolder?.id || null);
     }
     
     setIsCreatingFolder(false);
@@ -154,9 +166,10 @@ const Dashboard = () => {
       toast.error(t('folderDeletedFailed'));
     } else {
       toast.success(t('folderDeletedSuccess'));
-      fetchFolders();
+      fetchFolders(currentFolder?.id || null);
       if (currentFolder?.id === folderId) {
         setCurrentFolder(null);
+        setFolderPath([]);
       }
     }
   };
@@ -168,6 +181,45 @@ const Dashboard = () => {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
+  };
+
+  const navigateToFolder = (folder: UserFolder) => {
+    setFolderPath(prev => [...prev, folder]);
+    setCurrentFolder(folder);
+  };
+
+  const navigateBack = () => {
+    if (folderPath.length > 0) {
+      const newPath = [...folderPath];
+      newPath.pop();
+      setFolderPath(newPath);
+      setCurrentFolder(newPath.length > 0 ? newPath[newPath.length - 1] : null);
+    } else {
+      setCurrentFolder(null);
+    }
+  };
+
+  const navigateToPathIndex = (index: number) => {
+    if (index === -1) {
+      setCurrentFolder(null);
+      setFolderPath([]);
+    } else {
+      const newPath = folderPath.slice(0, index + 1);
+      setFolderPath(newPath);
+      setCurrentFolder(newPath[newPath.length - 1]);
+    }
+  };
+
+  const handleDownloadFolder = async (folder: UserFolder) => {
+    if (!user) return;
+    
+    // Get all folders for path resolution
+    const { data: allFolders } = await supabase
+      .from("user_folders")
+      .select("id, name, parent_id")
+      .eq("user_id", user.id);
+    
+    await downloadFolder(folder, user.id, allFolders || []);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -313,55 +365,63 @@ const Dashboard = () => {
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Breadcrumb & Actions */}
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-          <div className="flex items-center gap-2">
-            {currentFolder && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Breadcrumb navigation */}
+            <div className="flex items-center gap-1 text-sm">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setCurrentFolder(null)}
-                className="gap-1"
+                onClick={() => navigateToPathIndex(-1)}
+                className={`gap-1 ${!currentFolder ? 'font-semibold text-primary' : ''}`}
               >
-                <ChevronLeft className="h-4 w-4" />
-                {t('back')}
+                {t('myFiles')}
               </Button>
-            )}
-            <h2 className="text-xl font-semibold">
-              {currentFolder ? currentFolder.name : t('myFiles')}
-            </h2>
+              {folderPath.map((folder, index) => (
+                <div key={folder.id} className="flex items-center gap-1">
+                  <ChevronRight className="h-4 w-4 text-muted-foreground flip-rtl" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigateToPathIndex(index)}
+                    className={index === folderPath.length - 1 ? 'font-semibold text-primary' : ''}
+                  >
+                    {folder.name}
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
           
           <div className="flex gap-2">
-            {!currentFolder && (
-              <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    <FolderPlus className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t('newFolder')}</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{t('createNewFolder')}</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="folderName">{t('folderName')}</Label>
-                      <Input
-                        id="folderName"
-                        value={newFolderName}
-                        onChange={(e) => setNewFolderName(e.target.value)}
-                        placeholder={t('enterFolderName')}
-                      />
-                    </div>
+            <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <FolderPlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('newFolder')}</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{t('createNewFolder')}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="folderName">{t('folderName')}</Label>
+                    <Input
+                      id="folderName"
+                      value={newFolderName}
+                      onChange={(e) => setNewFolderName(e.target.value)}
+                      placeholder={t('enterFolderName')}
+                    />
                   </div>
-                  <DialogFooter>
-                    <Button onClick={createFolder} disabled={isCreatingFolder || !newFolderName.trim()}>
-                      {isCreatingFolder ? t('creating') : t('create')}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
+                </div>
+                <DialogFooter>
+                  <Button onClick={createFolder} disabled={isCreatingFolder || !newFolderName.trim()}>
+                    {isCreatingFolder ? t('creating') : t('create')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             
             <Label className="cursor-pointer">
               <Button variant="default" className="gap-2" asChild>
@@ -381,8 +441,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Folders Grid (only show if not in a folder) */}
-        {!currentFolder && folders.length > 0 && (
+        {/* Folders Grid */}
+        {folders.length > 0 && (
           <div className="mb-8">
             <h3 className="text-lg font-medium mb-4">{t('folders')}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -395,22 +455,38 @@ const Dashboard = () => {
                 >
                   <Card 
                     className="cursor-pointer hover:shadow-lg transition-all group"
-                    onClick={() => setCurrentFolder(folder)}
+                    onClick={() => navigateToFolder(folder)}
                   >
                     <CardContent className="relative p-4 flex flex-col items-center">
                       <Folder className="h-12 w-12 text-primary mb-2" />
                       <p className="text-sm font-medium text-center truncate w-full">{folder.name}</p>
+                      {/* Folder actions */}
+                      <div className="absolute top-2 left-2 flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadFolder(folder);
+                          }}
+                          disabled={downloadingFolder}
+                          aria-label={t('downloadFolder')}
+                        >
+                          <FolderDown className="h-3 w-3" />
+                        </Button>
+                      </div>
                       <Button
                         variant="outline"
                         size="icon"
-                        className="absolute top-2 left-2 h-8 w-8"
+                        className="absolute top-2 right-2 h-7 w-7"
                         onClick={(e) => {
                           e.stopPropagation();
                           deleteFolder(folder.id);
                         }}
                         aria-label={t('delete')}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-3 w-3 text-destructive" />
                       </Button>
                     </CardContent>
                   </Card>

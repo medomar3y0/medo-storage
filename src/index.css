@@ -115,7 +115,6 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    direction: rtl;
     font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     letter-spacing: -0.01em;
     line-height: 1.7;
@@ -170,6 +169,20 @@ All colors MUST be HSL.
     50% {
       opacity: 0.5;
     }
+  }
+  
+  /* RTL/LTR Direction Support */
+  [dir="rtl"] body {
+    direction: rtl;
+  }
+  
+  [dir="ltr"] body {
+    direction: ltr;
+  }
+  
+  /* Flip icons and elements for LTR */
+  [dir="ltr"] .flip-rtl {
+    transform: scaleX(-1);
   }
 }
 
