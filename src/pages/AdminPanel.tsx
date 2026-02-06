@@ -44,6 +44,7 @@ interface UserFolder {
   id: string;
   name: string;
   created_at: string;
+  user_id: string;
 }
 
 const AdminPanel = () => {
@@ -276,6 +277,46 @@ const AdminPanel = () => {
     } catch (error) {
       console.error("Delete error:", error);
       toast.error("فشل حذف الملف");
+    }
+  };
+
+  const deleteFolder = async (folder: UserFolder) => {
+    if (!window.confirm(`هل أنت متأكد من حذف المجلد "${folder.name}" وجميع ملفاته؟`)) return;
+
+    try {
+      // Delete folder from database (cascade will delete files)
+      const { error: dbError } = await supabase
+        .from("user_folders")
+        .delete()
+        .eq("id", folder.id);
+
+      if (dbError) throw dbError;
+
+      // Send notification to folder owner
+      if (selectedUser) {
+        try {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              userId: selectedUser.id,
+              title: "تم حذف مجلد",
+              message: `تم حذف مجلدك "${folder.name}" بواسطة المدير`,
+              type: "warning",
+              metadata: { folderName: folder.name, deletedBy: user?.email }
+            }
+          });
+        } catch (notifError) {
+          console.error("Failed to send notification:", notifError);
+        }
+      }
+
+      toast.success("تم حذف المجلد بنجاح");
+      if (selectedUser) {
+        fetchUserData(selectedUser.id);
+      }
+      fetchStats();
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("فشل حذف المجلد");
     }
   };
 
@@ -539,7 +580,16 @@ const AdminPanel = () => {
                     <Card key={folder.id}>
                       <CardContent className="p-4 flex flex-col items-center">
                         <Folder className="h-10 w-10 text-primary mb-2" />
-                        <p className="text-sm text-center truncate w-full">{folder.name}</p>
+                        <p className="text-sm text-center truncate w-full mb-2">{folder.name}</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => deleteFolder(folder)}
+                          className="gap-1 text-destructive hover:text-destructive w-full"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          حذف
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
