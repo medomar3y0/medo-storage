@@ -85,6 +85,20 @@ const Dashboard = () => {
     localStorage.setItem('fileViewMode', newMode);
   };
 
+  const toggleFolderPublic = async (folder: UserFolder) => {
+    const { error } = await supabase
+      .from("user_folders")
+      .update({ is_public: !folder.is_public })
+      .eq("id", folder.id);
+
+    if (error) {
+      toast.error(t('error'));
+    } else {
+      toast.success(folder.is_public ? t('folderNowPrivate') : t('folderNowPublic'));
+      fetchFolders(currentFolder?.id || null);
+    }
+  };
+
   const generateFolderShareCode = async (folder: UserFolder) => {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
@@ -484,37 +498,50 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Current folder actions (download & share) */}
+        {/* Current folder actions (download, share, privacy) */}
         {currentFolder && (
           <Card className="mb-6">
-            <CardContent className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-3">
-                <FolderOpen className="h-8 w-8 text-primary" />
-                <div>
-                  <p className="font-medium">{currentFolder.name}</p>
-                  <p className="text-sm text-muted-foreground">{files.length} {t('files')}</p>
+            <CardContent className="py-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <FolderOpen className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="font-medium">{currentFolder.name}</p>
+                    <p className="text-sm text-muted-foreground">{files.length} {t('files')}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => handleDownloadFolder(currentFolder)}
-                  disabled={downloadingFolder}
-                >
-                  <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('downloadFolder')}</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => copyFolderLink(currentFolder)}
-                >
-                  <Share2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('shareFolder')}</span>
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Privacy Toggle */}
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+                    <Checkbox
+                      id="folder-public"
+                      checked={currentFolder.is_public}
+                      onCheckedChange={() => toggleFolderPublic(currentFolder)}
+                    />
+                    <Label htmlFor="folder-public" className="text-sm cursor-pointer">
+                      {t('public')}
+                    </Label>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => handleDownloadFolder(currentFolder)}
+                    disabled={downloadingFolder}
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t('downloadFolder')}</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => copyFolderLink(currentFolder)}
+                  >
+                    <Share2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t('shareFolder')}</span>
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -536,49 +563,41 @@ const Dashboard = () => {
                     className="cursor-pointer hover:shadow-lg transition-all group"
                     onClick={() => navigateToFolder(folder)}
                   >
-                    <CardContent className="relative p-4 flex flex-col items-center">
+                    <CardContent className="p-4 flex flex-col items-center">
                       <Folder className="h-12 w-12 text-primary mb-2" />
-                      <p className="text-sm font-medium text-center truncate w-full">{folder.name}</p>
-                      {/* Folder actions */}
-                      <div className="absolute top-2 left-2 flex gap-1">
+                      <p className="text-sm font-medium text-center truncate w-full mb-3">{folder.name}</p>
+                      
+                      {/* Folder actions - below name */}
+                      <div className="flex items-center justify-center gap-1 w-full" onClick={(e) => e.stopPropagation()}>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownloadFolder(folder);
-                          }}
+                          className="h-8 w-8 hover:bg-primary/10"
+                          onClick={() => handleDownloadFolder(folder)}
                           disabled={downloadingFolder}
                           aria-label={t('downloadFolder')}
                         >
-                          <FolderDown className="h-3 w-3" />
+                          <FolderDown className="h-4 w-4 text-primary" />
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyFolderLink(folder);
-                          }}
+                          className="h-8 w-8 hover:bg-primary/10"
+                          onClick={() => copyFolderLink(folder)}
                           aria-label={t('shareFolder')}
                         >
-                          <Share2 className="h-3 w-3" />
+                          <Share2 className="h-4 w-4 text-primary" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-destructive/10"
+                          onClick={() => deleteFolder(folder.id)}
+                          aria-label={t('delete')}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="absolute top-2 right-2 h-7 w-7"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteFolder(folder.id);
-                        }}
-                        aria-label={t('delete')}
-                      >
-                        <Trash2 className="h-3 w-3 text-destructive" />
-                      </Button>
                     </CardContent>
                   </Card>
                 </motion.div>

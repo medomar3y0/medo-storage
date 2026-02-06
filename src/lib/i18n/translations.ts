@@ -158,6 +158,15 @@ export const translations = {
     shareFolder: "مشاركة المجلد",
     folderShareCode: "رمز مشاركة المجلد",
     folderLinkCopied: "تم نسخ رابط المجلد",
+    folderNowPublic: "المجلد الآن عام",
+    folderNowPrivate: "المجلد الآن خاص",
+    deleteFolderAdmin: "حذف المجلد",
+    folderDeletedByAdmin: "تم حذف مجلدك بواسطة المدير",
+    lightOrange: "فاتح (برتقالي)",
+    lightGreen: "فاتح (أخضر)",
+    darkOrange: "داكن (برتقالي)",
+    darkGreen: "داكن (أخضر)",
+    chooseTheme: "اختر السمة",
     
     // Notifications
     notifications: "الإشعارات",
@@ -338,6 +347,15 @@ export const translations = {
     shareFolder: "Share Folder",
     folderShareCode: "Folder Share Code",
     folderLinkCopied: "Folder link copied",
+    folderNowPublic: "Folder is now public",
+    folderNowPrivate: "Folder is now private",
+    deleteFolderAdmin: "Delete Folder",
+    folderDeletedByAdmin: "Your folder was deleted by admin",
+    lightOrange: "Light (Orange)",
+    lightGreen: "Light (Green)",
+    darkOrange: "Dark (Orange)",
+    darkGreen: "Dark (Green)",
+    chooseTheme: "Choose Theme",
     
     // Notifications
     notifications: "Notifications",
@@ -518,6 +536,15 @@ export const translations = {
     shareFolder: "Partager le dossier",
     folderShareCode: "Code de partage du dossier",
     folderLinkCopied: "Lien du dossier copié",
+    folderNowPublic: "Le dossier est maintenant public",
+    folderNowPrivate: "Le dossier est maintenant privé",
+    deleteFolderAdmin: "Supprimer le dossier",
+    folderDeletedByAdmin: "Votre dossier a été supprimé par l'admin",
+    lightOrange: "Clair (Orange)",
+    lightGreen: "Clair (Vert)",
+    darkOrange: "Sombre (Orange)",
+    darkGreen: "Sombre (Vert)",
+    chooseTheme: "Choisir le thème",
     
     // Notifications
     notifications: "Notifications",

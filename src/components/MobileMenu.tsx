@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -144,11 +144,10 @@ export const MobileMenu = () => {
             </>
           )}
 
-          {/* Theme & Language */}
           <div className="mt-4 pt-4 border-t space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{t('theme')}</span>
-              <ThemeToggle />
+              <ThemeSelector />
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{t('language')}</span>
