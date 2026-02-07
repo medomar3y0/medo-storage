@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-type ColorTheme = 'orange' | 'green';
+type ColorTheme = 'orange' | 'green' | 'blue';
 
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme();
@@ -46,8 +46,10 @@ export function ThemeSelector() {
   const themeOptions = [
     { key: 'light-orange', mode: 'light' as const, color: 'orange' as const, label: t('lightOrange') },
     { key: 'light-green', mode: 'light' as const, color: 'green' as const, label: t('lightGreen') },
+    { key: 'light-blue', mode: 'light' as const, color: 'blue' as const, label: t('lightBlue') },
     { key: 'dark-orange', mode: 'dark' as const, color: 'orange' as const, label: t('darkOrange') },
     { key: 'dark-green', mode: 'dark' as const, color: 'green' as const, label: t('darkGreen') },
+    { key: 'dark-blue', mode: 'dark' as const, color: 'blue' as const, label: t('darkBlue') },
   ];
 
   if (!mounted) {

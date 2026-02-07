@@ -164,8 +164,10 @@ export const translations = {
     folderDeletedByAdmin: "تم حذف مجلدك بواسطة المدير",
     lightOrange: "فاتح (برتقالي)",
     lightGreen: "فاتح (أخضر)",
+    lightBlue: "فاتح (لبني)",
     darkOrange: "داكن (برتقالي)",
     darkGreen: "داكن (أخضر)",
+    darkBlue: "داكن (لبني)",
     chooseTheme: "اختر السمة",
     
     // Notifications
@@ -182,6 +184,7 @@ export const translations = {
     heroTitle: "مشاركة ملفاتك بسهولة",
     heroDescription: "قم برفع ملفاتك ومشاركتها مع أي شخص بروابط قصيرة وسريعة",
     getStarted: "ابدأ الآن",
+    installApp: "تثبيت التطبيق",
     features: "المميزات",
     featureUpload: "رفع سريع",
     featureUploadDesc: "رفع ملفاتك بسرعة وأمان",
@@ -353,8 +356,10 @@ export const translations = {
     folderDeletedByAdmin: "Your folder was deleted by admin",
     lightOrange: "Light (Orange)",
     lightGreen: "Light (Green)",
+    lightBlue: "Light (Blue)",
     darkOrange: "Dark (Orange)",
     darkGreen: "Dark (Green)",
+    darkBlue: "Dark (Blue)",
     chooseTheme: "Choose Theme",
     
     // Notifications
@@ -371,6 +376,7 @@ export const translations = {
     heroTitle: "Share your files easily",
     heroDescription: "Upload your files and share them with anyone using short and fast links",
     getStarted: "Get Started",
+    installApp: "Install App",
     features: "Features",
     featureUpload: "Fast Upload",
     featureUploadDesc: "Upload your files quickly and securely",
@@ -542,8 +548,10 @@ export const translations = {
     folderDeletedByAdmin: "Votre dossier a été supprimé par l'admin",
     lightOrange: "Clair (Orange)",
     lightGreen: "Clair (Vert)",
+    lightBlue: "Clair (Bleu)",
     darkOrange: "Sombre (Orange)",
     darkGreen: "Sombre (Vert)",
+    darkBlue: "Sombre (Bleu)",
     chooseTheme: "Choisir le thème",
     
     // Notifications
@@ -560,6 +568,7 @@ export const translations = {
     heroTitle: "Partagez vos fichiers facilement",
     heroDescription: "Téléversez vos fichiers et partagez-les avec des liens courts et rapides",
     getStarted: "Commencer",
+    installApp: "Installer l'application",
     features: "Fonctionnalités",
     featureUpload: "Téléversement rapide",
     featureUploadDesc: "Téléversez vos fichiers rapidement et en toute sécurité",

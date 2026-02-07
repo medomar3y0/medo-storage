@@ -3,15 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Upload, FolderOpen, Share2, Shield } from "lucide-react";
+import { Upload, FolderOpen, Share2, Shield, Download } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -27,6 +28,22 @@ const Home = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+  };
 
   const features = [
     {
@@ -66,7 +83,7 @@ const Home = () => {
           </p>
         </div>
 
-        {/* Features Grid */}
+        {/* Features / Instructions */}
         <div className="flex flex-col gap-4 max-w-4xl mx-auto mb-12 w-full">
           {features.map((feature, index) => (
             <Card key={index} className="hover:shadow-lg transition-shadow w-full">
@@ -84,13 +101,24 @@ const Home = () => {
         </div>
 
         {/* CTA */}
-        {!user && (
-          <div className="mt-8 flex gap-4">
+        <div className="flex flex-wrap gap-4 justify-center">
+          {user ? (
+            <Button size="lg" onClick={() => navigate("/dashboard")} className="gap-2">
+              <FolderOpen className="h-5 w-5" />
+              {t('myFiles')}
+            </Button>
+          ) : (
             <Button size="lg" onClick={() => navigate("/auth?signup=true")} className="gap-2">
               {t('getStarted')}
             </Button>
-          </div>
-        )}
+          )}
+          {deferredPrompt && (
+            <Button size="lg" variant="outline" onClick={handleInstall} className="gap-2">
+              <Download className="h-5 w-5" />
+              {t('installApp')}
+            </Button>
+          )}
+        </div>
       </div>
 
       <Footer />

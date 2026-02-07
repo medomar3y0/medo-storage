@@ -65,7 +65,7 @@ export const NotificationBell = () => {
           <span className="sr-only">{t('notifications')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-72 sm:w-80 max-w-[calc(100vw-2rem)] me-2">
+      <DropdownMenuContent align="end" className="w-72 sm:w-80 max-w-[calc(100vw-2rem)] me-4" sideOffset={8}>
         <div className="flex items-center justify-between px-3 py-2 border-b">
           <span className="font-semibold">{t('notifications')}</span>
           {notifications.length > 0 && (

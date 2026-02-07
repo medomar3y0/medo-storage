@@ -449,99 +449,142 @@ const Dashboard = () => {
             </div>
           </div>
           
-          <div className="flex gap-2">
-            <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <FolderPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('newFolder')}</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t('createNewFolder')}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="folderName">{t('folderName')}</Label>
-                    <Input
-                      id="folderName"
-                      value={newFolderName}
-                      onChange={(e) => setNewFolderName(e.target.value)}
-                      placeholder={t('enterFolderName')}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={createFolder} disabled={isCreatingFolder || !newFolderName.trim()}>
-                    {isCreatingFolder ? t('creating') : t('create')}
+          {!currentFolder && (
+            <div className="flex gap-2">
+              <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <FolderPlus className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t('newFolder')}</span>
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            
-            <Label className="cursor-pointer">
-              <Button variant="default" className="gap-2" asChild>
-                <span>
-                  <Upload className="h-4 w-4" />
-                  <span className="hidden sm:inline">{uploading ? t('uploading') : t('uploadFile')}</span>
-                </span>
-              </Button>
-              <Input
-                type="file"
-                multiple
-                className="hidden"
-                onChange={handleFileUpload}
-                disabled={uploading}
-              />
-            </Label>
-          </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{t('createNewFolder')}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="folderName">{t('folderName')}</Label>
+                      <Input
+                        id="folderName"
+                        value={newFolderName}
+                        onChange={(e) => setNewFolderName(e.target.value)}
+                        placeholder={t('enterFolderName')}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={createFolder} disabled={isCreatingFolder || !newFolderName.trim()}>
+                      {isCreatingFolder ? t('creating') : t('create')}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
+              <Label className="cursor-pointer">
+                <Button variant="default" className="gap-2" asChild>
+                  <span>
+                    <Upload className="h-4 w-4" />
+                    <span className="hidden sm:inline">{uploading ? t('uploading') : t('uploadFile')}</span>
+                  </span>
+                </Button>
+                <Input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                />
+              </Label>
+            </div>
+          )}
         </div>
 
-        {/* Current folder actions (download, share, privacy) */}
+        {/* Current folder actions */}
         {currentFolder && (
           <Card className="mb-6">
             <CardContent className="py-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <FolderOpen className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="font-medium">{currentFolder.name}</p>
-                    <p className="text-sm text-muted-foreground">{files.length} {t('files')}</p>
-                  </div>
+              <div className="flex items-center gap-3 mb-3">
+                <FolderOpen className="h-8 w-8 text-primary" />
+                <div>
+                  <p className="font-medium">{currentFolder.name}</p>
+                  <p className="text-sm text-muted-foreground">{files.length} {t('files')}</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {/* Privacy Toggle */}
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
-                    <Checkbox
-                      id="folder-public"
-                      checked={currentFolder.is_public}
-                      onCheckedChange={() => toggleFolderPublic(currentFolder)}
-                    />
-                    <Label htmlFor="folder-public" className="text-sm cursor-pointer">
-                      {t('public')}
-                    </Label>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => handleDownloadFolder(currentFolder)}
-                    disabled={downloadingFolder}
-                  >
-                    <Download className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t('downloadFolder')}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Label className="cursor-pointer">
+                  <Button variant="outline" size="sm" className="gap-2" asChild>
+                    <span>
+                      <Upload className="h-4 w-4" />
+                      <span className="hidden sm:inline">{uploading ? t('uploading') : t('uploadFile')}</span>
+                    </span>
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => copyFolderLink(currentFolder)}
-                  >
-                    <Share2 className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t('shareFolder')}</span>
-                  </Button>
+                  <Input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                  />
+                </Label>
+                <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <FolderPlus className="h-4 w-4" />
+                      <span className="hidden sm:inline">{t('newFolder')}</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>{t('createNewFolder')}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="folderName2">{t('folderName')}</Label>
+                        <Input
+                          id="folderName2"
+                          value={newFolderName}
+                          onChange={(e) => setNewFolderName(e.target.value)}
+                          placeholder={t('enterFolderName')}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={createFolder} disabled={isCreatingFolder || !newFolderName.trim()}>
+                        {isCreatingFolder ? t('creating') : t('create')}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
+                  <Checkbox
+                    id="folder-public"
+                    checked={currentFolder.is_public}
+                    onCheckedChange={() => toggleFolderPublic(currentFolder)}
+                  />
+                  <Label htmlFor="folder-public" className="text-sm cursor-pointer">
+                    {t('public')}
+                  </Label>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => handleDownloadFolder(currentFolder)}
+                  disabled={downloadingFolder}
+                >
+                  <Download className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('downloadFolder')}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => copyFolderLink(currentFolder)}
+                >
+                  <Share2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('shareFolder')}</span>
+                </Button>
               </div>
             </CardContent>
           </Card>
