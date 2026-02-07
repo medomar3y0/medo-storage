@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { MobileMenu } from "@/components/MobileMenu";
 import { NotificationBell } from "@/components/NotificationBell";
-import { ThemeSelector } from "@/components/ThemeSelector";
+
 
 type HeaderProps = {
   /** عنوان الصفحة (لو لم يُمرَّر سيتم استخدام اسم الموقع). */
@@ -28,7 +28,6 @@ export const Header = ({ title }: HeaderProps) => {
             {displayTitle}
           </button>
           <div className="flex items-center gap-2">
-            <ThemeSelector />
             <NotificationBell />
             <MobileMenu />
           </div>

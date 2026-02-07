@@ -77,6 +77,24 @@ All colors MUST be HSL.
     --sidebar-ring: 25 95% 53%;
   }
 
+  /* Blue theme - Light */
+  [data-color-theme="blue"]:root,
+  :root[data-color-theme="blue"] {
+    --primary: 210 80% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 210 90% 62%;
+    --accent: 210 80% 55%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 210 80% 55%;
+    --gradient-primary: linear-gradient(135deg, hsl(210 80% 55%), hsl(210 90% 62%));
+    --gradient-accent: linear-gradient(135deg, hsl(210 80% 55% / 0.08), hsl(210 90% 62% / 0.03));
+    --shadow-elegant: 0 10px 30px -5px hsl(210 80% 55% / 0.15);
+    --shadow-hover: 0 20px 40px -10px hsl(210 90% 62% / 0.25);
+    --shadow-glow: 0 0 30px hsl(210 90% 62% / 0.1);
+    --sidebar-primary: 210 80% 55%;
+    --sidebar-ring: 210 80% 55%;
+  }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -140,6 +158,24 @@ All colors MUST be HSL.
     --shadow-glow: 0 0 40px hsl(25 100% 60% / 0.15);
     --sidebar-primary: 25 95% 53%;
     --sidebar-ring: 25 95% 53%;
+  }
+
+  /* Blue theme - Dark */
+  .dark[data-color-theme="blue"],
+  [data-color-theme="blue"].dark {
+    --primary: 210 80% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 210 90% 62%;
+    --accent: 210 80% 55%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 210 80% 55%;
+    --gradient-primary: linear-gradient(135deg, hsl(210 80% 55%), hsl(210 90% 62%));
+    --gradient-accent: linear-gradient(135deg, hsl(210 80% 55% / 0.1), hsl(210 90% 62% / 0.05));
+    --shadow-elegant: 0 20px 50px -12px hsl(210 80% 55% / 0.25);
+    --shadow-hover: 0 25px 60px -15px hsl(210 90% 62% / 0.35);
+    --shadow-glow: 0 0 40px hsl(210 90% 62% / 0.15);
+    --sidebar-primary: 210 80% 55%;
+    --sidebar-ring: 210 80% 55%;
   }
 }
 
