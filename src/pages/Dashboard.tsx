@@ -506,8 +506,21 @@ const Dashboard = () => {
             <CardContent className="py-4">
               <div className="flex items-center gap-3 mb-3">
                 <FolderOpen className="h-8 w-8 text-primary" />
-                <div>
-                  <p className="font-medium">{currentFolder.name}</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{currentFolder.name}</p>
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-muted/50" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        id="folder-public"
+                        checked={currentFolder.is_public}
+                        onCheckedChange={() => toggleFolderPublic(currentFolder)}
+                        className="h-3.5 w-3.5"
+                      />
+                      <Label htmlFor="folder-public" className="text-xs cursor-pointer">
+                        {currentFolder.is_public ? t('public') : t('private')}
+                      </Label>
+                    </div>
+                  </div>
                   <p className="text-sm text-muted-foreground">{files.length} {t('files')}</p>
                 </div>
               </div>
@@ -556,16 +569,6 @@ const Dashboard = () => {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
-                  <Checkbox
-                    id="folder-public"
-                    checked={currentFolder.is_public}
-                    onCheckedChange={() => toggleFolderPublic(currentFolder)}
-                  />
-                  <Label htmlFor="folder-public" className="text-sm cursor-pointer">
-                    {t('public')}
-                  </Label>
-                </div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -590,62 +593,98 @@ const Dashboard = () => {
           </Card>
         )}
 
-        {/* Folders Grid */}
+        {/* Folders Section */}
         {folders.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-lg font-medium mb-4">{t('folders')}</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {folders.map((folder, index) => (
-                <motion.div
-                  key={folder.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all group"
-                    onClick={() => navigateToFolder(folder)}
-                  >
-                    <CardContent className="p-4 flex flex-col items-center">
-                      <Folder className="h-12 w-12 text-primary mb-2" />
-                      <p className="text-sm font-medium text-center truncate w-full mb-3">{folder.name}</p>
-                      
-                      {/* Folder actions - below name */}
-                      <div className="flex items-center justify-center gap-1 w-full" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-primary/10"
-                          onClick={() => handleDownloadFolder(folder)}
-                          disabled={downloadingFolder}
-                          aria-label={t('downloadFolder')}
-                        >
-                          <FolderDown className="h-4 w-4 text-primary" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-primary/10"
-                          onClick={() => copyFolderLink(folder)}
-                          aria-label={t('shareFolder')}
-                        >
-                          <Share2 className="h-4 w-4 text-primary" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-destructive/10"
-                          onClick={() => deleteFolder(folder.id)}
-                          aria-label={t('delete')}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium">{t('folders')}</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleViewMode}
+                className="gap-2"
+              >
+                {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
+                <span className="hidden sm:inline">{viewMode === 'grid' ? t('listView') : t('gridView')}</span>
+              </Button>
             </div>
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {folders.map((folder, index) => (
+                  <motion.div
+                    key={folder.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <Card 
+                      className="cursor-pointer hover:shadow-lg transition-all group"
+                      onClick={() => navigateToFolder(folder)}
+                    >
+                      <CardContent className="p-4 flex flex-col items-center">
+                        <Folder className="h-12 w-12 text-primary mb-2" />
+                        <p className="text-sm font-medium text-center truncate w-full mb-3">{folder.name}</p>
+                        
+                        <div className="flex items-center justify-center gap-1 w-full" onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10"
+                            onClick={() => handleDownloadFolder(folder)} disabled={downloadingFolder}
+                            aria-label={t('downloadFolder')}>
+                            <FolderDown className="h-4 w-4 text-primary" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10"
+                            onClick={() => copyFolderLink(folder)} aria-label={t('shareFolder')}>
+                            <Share2 className="h-4 w-4 text-primary" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10"
+                            onClick={() => deleteFolder(folder.id)} aria-label={t('delete')}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {folders.map((folder, index) => (
+                  <motion.div
+                    key={folder.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <Card 
+                      className="cursor-pointer hover:shadow-lg transition-all"
+                      onClick={() => navigateToFolder(folder)}
+                    >
+                      <div className="flex items-center gap-4 p-4">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Folder className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{folder.name}</p>
+                        </div>
+                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8"
+                            onClick={() => handleDownloadFolder(folder)} disabled={downloadingFolder}>
+                            <FolderDown className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8"
+                            onClick={() => copyFolderLink(folder)}>
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8"
+                            onClick={() => deleteFolder(folder.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -653,15 +692,17 @@ const Dashboard = () => {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium">{t('files')}</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleViewMode}
-              className="gap-2"
-            >
-              {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
-              <span className="hidden sm:inline">{viewMode === 'grid' ? t('listView') : t('gridView')}</span>
-            </Button>
+            {folders.length === 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleViewMode}
+                className="gap-2"
+              >
+                {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
+                <span className="hidden sm:inline">{viewMode === 'grid' ? t('listView') : t('gridView')}</span>
+              </Button>
+            )}
           </div>
           {files.length > 0 ? (
             <div className={viewMode === 'grid' 
